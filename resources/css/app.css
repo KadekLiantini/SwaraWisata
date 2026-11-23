@@ -24,6 +24,8 @@
 
     --color-page: #f9f9ff;           /* latar halaman */
     --color-soft: #f0f3ff;           /* Bg Primary: kotak info, footer */
+    --color-soft-strong: #e7eeff;    /* kotak catatan & badge di halaman Login */
+    --color-mint: #98f4d3;           /* badge hijau muda */
     --color-ink: #111c2d;            /* Font Color */
     --color-muted: #3e4944;          /* teks sekunder */
     --color-subtle: #6e7a74;         /* teks/ikon redup */
