@@ -32,7 +32,7 @@ class Akun extends Authenticatable
         return match ($this->role) {
             self::ROLE_ADMIN     => route('admin.dashboard'),
             self::ROLE_PENGELOLA => route('pengelola.dashboard'),
-            default              => route('home'),
+            default              => route('wisatawan.beranda'),
         };
     }
 

@@ -82,7 +82,7 @@ class LoginController extends Controller
     private function arahkanSetelahLogin(Request $request, Akun $akun): RedirectResponse
     {
         if ($akun->isWisatawan()) {
-            return redirect()->intended(route('home'));
+            return redirect()->intended($akun->dashboardRoute());
         }
 
         $tujuan = $request->session()->pull('url.intended');

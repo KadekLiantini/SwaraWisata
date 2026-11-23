@@ -30,7 +30,7 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         return redirect()
-            ->intended(route('home'))
+            ->intended(route('wisatawan.beranda'))
             ->with('success', "Registrasi berhasil. Selamat datang, {$akun->username}!");
     }
 }
