@@ -5,7 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 
 // Publik (aturan bisnis no. 1)
-Route::view('/', 'pages.home')->name('home');
+Route::view('/', 'pages.home')->middleware('guest')->name('home');
 
 // Tamu belum login
 Route::middleware('guest')->group(function () {
@@ -21,6 +21,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 
 // Wisatawan
 Route::middleware(['auth', 'role:wisatawan'])->group(function () {
+    Route::view('/beranda', 'wisatawan.beranda')->name('wisatawan.beranda');
     // laporan.create, laporan.store, pengajuan.*, komentar.* ...
 });
 
