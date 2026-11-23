@@ -15,7 +15,7 @@
                     description="Buat akun untuk melaporkan kerusakan infrastruktur wisata dan memantau penanganannya."
                 />
 
-                <form method="POST" action="{{ route('register') }}" class="flex flex-col gap-6" novalidate>
+                <form method="POST" action="{{ route('register.store') }}" class="flex flex-col gap-6" novalidate>
                     @csrf
 
                     <x-form.input
