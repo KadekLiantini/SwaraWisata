@@ -1,0 +1,3 @@
+Ekspor logo dari Figma lalu simpan di folder ini:
+- logo.svg        : node "Vector" di header (warna hijau), Export > SVG
+- logo-white.svg  : node "Vector" di sidebar admin (warna putih), Export > SVG
