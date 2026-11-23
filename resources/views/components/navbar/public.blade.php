@@ -60,7 +60,7 @@
             @if ($cta === 'login')
                 <x-button :href="route('login')" size="sm" icon-left="login">Masuk</x-button>
             @elseif ($cta === 'register')
-                <x-button :href="route('register')" size="sm" icon-left="person_add">Daftar</x-button>
+                <x-button :href="route('register')" size="sm" icon-left="login">Daftar</x-button>
             @endif
         @endauth
     </div>

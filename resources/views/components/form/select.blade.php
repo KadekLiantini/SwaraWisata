@@ -36,7 +36,7 @@
 
     <div class="relative">
         @if ($icon)
-            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-subtle">
+            <span @class(['pointer-events-none absolute inset-y-0 left-0 flex items-center text-subtle', 'pl-3.5' => $soft, 'pl-4' => ! $soft])>
                 <x-icon :name="$icon" size="20" />
             </span>
         @endif
