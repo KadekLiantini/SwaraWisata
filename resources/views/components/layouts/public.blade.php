@@ -48,7 +48,9 @@
         </div>
     </main>
 
-    @if ($footer)
+    @if ($footer === 'landing')
+        <x-footer-landing />
+    @elseif ($footer)
         <x-footer />
     @endif
 

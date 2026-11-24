@@ -57,10 +57,16 @@
                 </div>
             </details>
         @else
-            @if ($cta === 'login')
+            @if ($cta === 'landing')
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('login') }}" class="rounded-lg bg-primary px-4 py-2 font-heading text-sm leading-5 font-semibold text-white transition hover:bg-primary-hover">Masuk</a>
+                    <a href="{{ route('register') }}" aria-label="Daftar akun wisatawan" title="Daftar akun"
+                       class="ml-1 flex size-8 items-center justify-center rounded-full bg-primary text-white transition hover:bg-primary-hover">
+                        <x-icon name="person" size="14" />
+                    </a>
+                </div>
+            @elseif ($cta === 'login')
                 <x-button :href="route('login')" size="sm" icon-left="login">Masuk</x-button>
-            @elseif ($cta === 'register')
-                <x-button :href="route('register')" size="sm" icon-left="login">Daftar</x-button>
             @endif
         @endauth
     </div>
