@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Wisatawan\DashboardController;
 
 // Publik (aturan bisnis no. 1)
 Route::view('/', 'pages.home')->middleware('guest')->name('home');
@@ -21,7 +22,8 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 
 // Wisatawan
 Route::middleware(['auth', 'role:wisatawan'])->group(function () {
-    Route::view('/beranda', 'wisatawan.beranda')->name('wisatawan.beranda');
+    Route::get('/beranda', [DashboardController::class, 'index'])
+    ->name('wisatawan.beranda');
     // laporan.create, laporan.store, pengajuan.*, komentar.* ...
 });
 
