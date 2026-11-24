@@ -56,27 +56,8 @@ class DashboardController extends Controller
                 $query->where('id_kategori_wisata', $request->kategori);
             });
 
-        // Sorting destinasi
-        $urutkan = $request->input('urutkan', 'terbanyak');
-
-        switch ($urutkan) {
-            case 'nama_asc':
-                $queryDestinasi->orderBy('nama', 'asc');
-                break;
-
-            case 'nama_desc':
-                $queryDestinasi->orderBy('nama', 'desc');
-                break;
-
-            case 'terbaru':
-                $queryDestinasi->orderByDesc('created_at');
-                break;
-
-            default:
-                $urutkan = 'terbanyak';
-                $queryDestinasi->orderByDesc('laporan_count');
-                break;
-        }
+        // Urutkan destinasi berdasarkan jumlah laporan terbanyak
+        $queryDestinasi->orderByDesc('laporan_count');
 
         $destinasi = $queryDestinasi
             ->paginate(6)
@@ -107,7 +88,6 @@ class DashboardController extends Controller
             'kabupaten',
             'kategoriWisata',
             'pembaruan',
-            'urutkan',
         ));
     }
 }

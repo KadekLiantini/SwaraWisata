@@ -7,7 +7,7 @@
                 Halo, {{ $akun->username }}!
             </h1>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-muted">
-                Cari tempat wisata yang ingin Anda laporkan. Pastikan destinasi sudah terdaftar
+                Cari destinasi wisata yang ingin Anda laporkan. Pastikan destinasi sudah terdaftar
                 agar laporan kerusakan langsung terhubung ke instansi dan pengelola resmi.
             </p>
 
@@ -70,19 +70,19 @@
         {{-- Pencarian destinasi: satu baris penuh --}}
         <section class="rounded-xl bg-white p-5 shadow-sm">
             <form action="{{ route('wisatawan.beranda') }}" method="GET">
-                <div class="flex items-center gap-3 rounded-lg border border-soft-strong bg-soft px-3">
+                <div class="flex items-center gap-3 rounded-lg border border-soft-strong bg-[#DEE8FF] px-3">
                     <x-icon name="search" class="text-primary" />
                     <input
                         type="text"
                         name="cari"
                         value="{{ request('cari') }}"
-                        placeholder="Cari nama tempat wisata, cagar budaya, atau pantai..."
+                        placeholder="Cari nama destinasi wisata, cagar budaya, atau pantai..."
                         class="w-full border-0 bg-transparent py-3 text-sm text-ink outline-none focus:ring-0"
                     >
                 </div>
 
-                {{-- Filter dan sorting: satu baris di bawah pencarian --}}
-                <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                {{-- Filter di bawah pencarian --}}
+                <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
                     <div>
                         <label for="kabupaten" class="mb-1 flex items-center gap-1 text-xs font-semibold text-subtle">
                             <x-icon name="location_on" size="15" />
@@ -91,6 +91,7 @@
                         <select
                             name="kabupaten"
                             id="kabupaten"
+                            onchange="this.form.requestSubmit()"
                             class="w-full rounded-lg border-0 bg-soft px-3 py-3 text-sm text-ink focus:ring-1 focus:ring-primary"
                         >
                             <option value="">Semua Wilayah Terdaftar</option>
@@ -110,6 +111,7 @@
                         <select
                             name="kategori"
                             id="kategori"
+                            onchange="this.form.requestSubmit()"
                             class="w-full rounded-lg border-0 bg-soft px-3 py-3 text-sm text-ink focus:ring-1 focus:ring-primary"
                         >
                             <option value="">Semua Kategori</option>
@@ -121,28 +123,6 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <div>
-                        <label for="urutkan" class="mb-1 flex items-center gap-1 text-xs font-semibold text-subtle">
-                            <x-icon name="sort" size="15" />
-                            Urutkan Berdasarkan
-                        </label>
-                        <select
-                            name="urutkan"
-                            id="urutkan"
-                            class="w-full rounded-lg border-0 bg-soft px-3 py-3 text-sm text-ink focus:ring-1 focus:ring-primary"
-                        >
-                            <option value="terbanyak" @selected($urutkan === 'terbanyak')>Paling Banyak Dilaporkan</option>
-                            <option value="nama_asc" @selected($urutkan === 'nama_asc')>Nama A–Z</option>
-                            <option value="nama_desc" @selected($urutkan === 'nama_desc')>Nama Z–A</option>
-                            <option value="terbaru" @selected($urutkan === 'terbaru')>Destinasi Terbaru</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <x-button type="submit" size="sm" icon-left="search">Terapkan</x-button>
-                    <x-button :href="route('wisatawan.beranda')" variant="outline" size="sm">Reset</x-button>
                 </div>
             </form>
         </section>
@@ -233,7 +213,7 @@
                                 Aturan Pelaporan Mandiri
                             </p>
                             <h2 class="mt-1 font-heading text-xl font-bold">
-                                Tempat Wisata Tujuan Anda Belum Terdaftar?
+                                Destinasi Wisata Tujuan Anda Belum Terdaftar?
                             </h2>
                             <p class="mt-2 max-w-lg text-sm leading-6 text-white/80">
                                 Jangan biarkan fasilitas rusak terbengkalai. Ajukan pendaftaran

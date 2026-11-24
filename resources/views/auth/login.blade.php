@@ -93,7 +93,7 @@
                         </span>
                         <div class="flex min-w-0 flex-1 flex-col gap-0.5">
                             <p class="font-heading text-base leading-6 font-semibold text-ink">Catatan Khusus Pengelola Destinasi</p>
-                            <p class="text-[15px] leading-[22px] font-semibold text-ink">Pengelola tempat wisata: gunakan username dan password dari admin.</p>
+                            <p class="text-[15px] leading-[22px] font-semibold text-ink">Pengelola Destinasi Wisata: gunakan username dan password dari admin.</p>
                             <p class="pt-px text-[13px] leading-[21.13px] text-muted">
                                 Tidak tersedia pemulihan mandiri via email. Jika pengelola lupa password atau memerlukan
                                 pembaruan kredensial, hubungi tim dinas atau administrator via WhatsApp resmi Layanan:
