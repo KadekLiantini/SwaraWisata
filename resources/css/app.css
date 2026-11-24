@@ -1,7 +1,7 @@
-@import 'tailwindcss';
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/plus-jakarta-sans';
-@import 'material-symbols/outlined.css';
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "material-symbols/outlined.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -13,26 +13,29 @@
  | Pakai lewat kelas Tailwind, contoh: bg-primary, text-ink, font-heading.
  */
 @theme {
-    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
-    --font-heading: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+    --font-heading:
+        "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
 
-    --color-primary: #005f49;        /* Primary */
+    --color-primary: #005f49; /* Primary */
     --color-primary-hover: #004b3a;
-    --color-primary-soft: #0d7a5f;   /* menu aktif sidebar pengelola */
-    --color-secondary: #fea619;      /* Secondary */
-    --color-secondary-ink: #855300;  /* teks di atas latar kuning/notice */
+    --color-primary-soft: #0d7a5f; /* menu aktif sidebar pengelola */
+    --color-secondary: #fea619; /* Secondary */
+    --color-secondary-ink: #855300; /* teks di atas latar kuning/notice */
 
-    --color-page: #f9f9ff;           /* latar halaman */
-    --color-soft: #f0f3ff;           /* Bg Primary: kotak info, footer */
-    --color-soft-strong: #e7eeff;    /* kotak catatan & badge di halaman Login */
-    --color-mint: #98f4d3;           /* badge hijau muda */
-    --color-ink: #111c2d;            /* Font Color */
-    --color-muted: #3e4944;          /* teks sekunder */
-    --color-subtle: #6e7a74;         /* teks/ikon redup */
+    --color-page: #f9f9ff; /* latar halaman */
+    --color-soft: #f0f3ff; /* Bg Primary: kotak info, footer */
+    --color-soft-strong: #e7eeff; /* kotak catatan & badge di halaman Login */
+    --color-mint: #98f4d3; /* badge hijau muda */
+    --color-peach: #ffddb8; /* badge/ikon oranye muda */
+    --color-soft-blue: #d8e3fb; /* latar progress bar & badge netral */
+    --color-ink: #111c2d; /* Font Color */
+    --color-muted: #3e4944; /* teks sekunder */
+    --color-subtle: #6e7a74; /* teks/ikon redup */
     --color-placeholder: #9ca3af;
-    --color-line: #bdc9c2;           /* garis & teks menu admin */
+    --color-line: #bdc9c2; /* garis & teks menu admin */
 
     --color-danger: #ba1a1a;
     --color-danger-soft: #ffdad6;
-    --color-admin: #263143;          /* latar sidebar admin */
+    --color-admin: #263143; /* latar sidebar admin */
 }

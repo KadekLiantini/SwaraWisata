@@ -4,9 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Wisatawan\DashboardController;
+use App\Http\Controllers\HomeController;
 
 // Publik (aturan bisnis no. 1)
-Route::view('/', 'pages.home')->middleware('guest')->name('home');
+Route::get('/', HomeController::class)->middleware('guest')->name('home');
 
 // Tamu belum login
 Route::middleware('guest')->group(function () {
