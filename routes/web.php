@@ -33,6 +33,9 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
         ->name('laporan.create');
     Route::post('/destinasi/{destinasi}/laporan', [LaporanController::class, 'store'])
         ->name('laporan.store');
+    // Detail laporan milik wisatawan
+    Route::get('/laporan/{laporan:id_laporan}', [LaporanController::class, 'show'])
+        ->name('laporan.show');
 });
 
 // Pengelola
