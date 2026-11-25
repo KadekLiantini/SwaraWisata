@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Wisatawan\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Wisatawan\LaporanController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -25,7 +26,13 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 Route::middleware(['auth', 'role:wisatawan'])->group(function () {
     Route::get('/beranda', [DashboardController::class, 'index'])
     ->name('wisatawan.beranda');
+
     // laporan.create, laporan.store, pengajuan.*, komentar.* ...
+    // Halaman pelaporan kerusakan destinasi
+    Route::get('/destinasi/{destinasi}/laporan/create', [LaporanController::class, 'create'])
+        ->name('laporan.create');
+    Route::post('/destinasi/{destinasi}/laporan', [LaporanController::class, 'store'])
+        ->name('laporan.store');
 });
 
 // Pengelola

@@ -1,3 +1,5 @@
+import './laporan.js';
+
 /*
  | Interaksi kecil untuk komponen form SwaraWisata.
  | Tidak perlu diubah oleh anggota tim; cukup pakai komponen <x-form.input>.
