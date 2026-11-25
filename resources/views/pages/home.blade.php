@@ -4,7 +4,7 @@
 --}}
 @php
     $format = fn ($angka) => number_format($angka, 0, ',', '.');
-    $urlLapor = Route::has('laporan.create') ? route('laporan.create') : route('login');
+    $urlLapor = route('login');
     $urlDetail = fn ($laporan) => Route::has('laporan.show') ? route('laporan.show', $laporan) : route('login');
     $urlSemua = Route::has('laporan.index') ? route('laporan.index') : route('login');
     $whatsapp = 'https://wa.me/6281234567890';

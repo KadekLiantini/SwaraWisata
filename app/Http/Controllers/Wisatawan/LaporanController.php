@@ -1,0 +1,166 @@
+<?php
+
+namespace App\Http\Controllers\Wisatawan;
+
+use App\Http\Controllers\Controller;
+use App\Models\Destinasi;
+use App\Models\KategoriKerusakan;
+use Illuminate\View\View;
+use App\Models\Laporan;
+use App\Models\FotoLaporan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class LaporanController extends Controller
+{
+    public function create(Request $request, Destinasi $destinasi): View
+    {
+        $destinasi->load([
+            'kecamatan.kabupaten',
+            'kategoriWisata',
+        ]);
+
+        $kategoriKerusakan = KategoriKerusakan::orderBy('nama')->get();
+
+        // Mengambil seluruh laporan pada destinasi ini
+        $laporanDasar = Laporan::where('id_destinasi', $destinasi->id_destinasi);
+
+        // Statistik laporan
+        $totalAduan = (clone $laporanDasar)->count();
+
+        $belumDilihat = (clone $laporanDasar)
+            ->where('status', Laporan::STATUS_BELUM_DILIHAT)
+            ->count();
+
+        $menungguTindakan = (clone $laporanDasar)
+            ->where('status', Laporan::STATUS_DILIHAT)
+            ->count();
+
+        $sedangDiproses = (clone $laporanDasar)
+            ->where('status', Laporan::STATUS_DITINDAKLANJUTI)
+            ->count();
+
+        $tuntasDiperbaiki = (clone $laporanDasar)
+            ->where('status', Laporan::STATUS_SELESAI)
+            ->count();
+
+        // Filter status laporan
+        $status = $request->query('status');
+
+        $laporanQuery = Laporan::with([
+            'pelapor',
+            'kategoriKerusakan',
+            'foto',
+            'riwayat.pengelola',
+            'riwayat.foto',
+        ])->where('id_destinasi', $destinasi->id_destinasi);
+
+        $daftarStatus = [
+            Laporan::STATUS_BELUM_DILIHAT,
+            Laporan::STATUS_DILIHAT,
+            Laporan::STATUS_DITINDAKLANJUTI,
+            Laporan::STATUS_SELESAI,
+        ];
+
+        if (in_array($status, $daftarStatus, true)) {
+            $laporanQuery->where('status', $status);
+        }
+
+        // Pengurutan laporan
+        $urutan = $request->query('urutan', 'terbaru');
+
+        if ($urutan === 'terlama') {
+            $laporanQuery->orderBy('created_at');
+        } else {
+            $laporanQuery->orderByDesc('created_at');
+        }
+
+        $laporan = $laporanQuery->paginate(3)->withQueryString();
+
+        $laporan->getCollection()->transform(function ($item) {
+            $item->laporan_saya = $item->id_akun == auth()->user()->id_akun;
+
+            $item->status_label = match ($item->status) {
+                Laporan::STATUS_BELUM_DILIHAT => 'Belum Dilihat',
+                Laporan::STATUS_DILIHAT => 'Dilihat',
+                Laporan::STATUS_DITINDAKLANJUTI => 'Ditindaklanjuti',
+                Laporan::STATUS_SELESAI => 'Selesai',
+                default => $item->status,
+            };
+
+            $item->status_class = match ($item->status) {
+                Laporan::STATUS_BELUM_DILIHAT => 'bg-gray-100 text-gray-600',
+                Laporan::STATUS_DILIHAT => 'bg-blue-50 text-blue-700',
+                Laporan::STATUS_DITINDAKLANJUTI => 'bg-amber-50 text-amber-700',
+                Laporan::STATUS_SELESAI => 'bg-green-50 text-green-700',
+                default => 'bg-gray-100 text-gray-600',
+            };
+
+            $item->riwayat_terakhir = $item->riwayat->last();
+
+            $item->pesan_penanganan = match ($item->status) {
+            'belum_dilihat' => 'Laporan menunggu untuk ditinjau oleh pengelola.',
+
+            'dilihat' => 'Telah ditinjau pengawas lapangan. Menunggu jadwal penanganan.',
+
+            'ditindaklanjuti' => $item->riwayat_terakhir?->deskripsi
+                ?? 'Pengelola sedang menindaklanjuti laporan.',
+
+            'selesai' => 'Telah diperbaiki oleh Tim Sarana Pengelola '
+                . ($item->riwayat_terakhir?->pengelola?->username ?? 'pengelola'),
+
+            default => '',
+        };
+
+            return $item;
+        });
+
+        return view('wisatawan.laporan.create', compact(
+            'destinasi',
+            'kategoriKerusakan',
+            'totalAduan',
+            'belumDilihat',
+            'menungguTindakan',
+            'sedangDiproses',
+            'tuntasDiperbaiki',
+            'laporan',
+            'status',
+            'urutan',
+        ));
+    }
+
+    public function store(Request $request, Destinasi $destinasi)
+    {
+        $validated = $request->validate([
+            'id_kategori_kerusakan' => ['required', 'exists:kategori_kerusakan,id_kategori_kerusakan'],
+            'judul' => ['required', 'string', 'max:150'],
+            'lokasi_spesifik' => ['required', 'string', 'max:255'],
+            'deskripsi' => ['required', 'string', 'max:1000'],
+            'foto' => ['required', 'array', 'min:1', 'max:3'],
+            'foto.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        DB::transaction(function () use ($request, $validated, $destinasi) {
+            $laporan = Laporan::create([
+                'id_akun' => auth()->user()->id_akun,
+                'id_destinasi' => $destinasi->id_destinasi,
+                'id_kategori_kerusakan' => $validated['id_kategori_kerusakan'],
+                'judul' => $validated['judul'],
+                'lokasi_spesifik' => $validated['lokasi_spesifik'],
+                'deskripsi' => $validated['deskripsi'],
+                'status' => Laporan::STATUS_BELUM_DILIHAT,
+            ]);
+
+            foreach ($request->file('foto') as $foto) {
+                FotoLaporan::create([
+                    'id_laporan' => $laporan->id_laporan,
+                    'path' => $foto->store('laporan', 'public'),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('laporan.create', $destinasi->id_destinasi)
+            ->with('success', 'Laporan berhasil dikirim.');
+    }
+}

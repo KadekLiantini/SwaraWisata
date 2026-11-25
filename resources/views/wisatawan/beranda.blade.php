@@ -70,7 +70,7 @@
         {{-- Pencarian destinasi: satu baris penuh --}}
         <section class="rounded-xl bg-white p-5 shadow-sm">
             <form action="{{ route('wisatawan.beranda') }}" method="GET">
-                <div class="flex items-center gap-3 rounded-lg border border-soft-strong bg-[#DEE8FF] px-3">
+                <div id="pencarian-destinasi" class="scroll-mt-[120px] flex items-center gap-3 rounded-lg border border-soft-strong bg-[#DEE8FF] px-3">
                     <x-icon name="search" class="text-primary" />
                     <input
                         type="text"
@@ -177,7 +177,7 @@
 
                                     @if (Route::has('laporan.create'))
                                         <a
-                                            href="{{ route('laporan.create', ['id_destinasi' => $item->id_destinasi]) }}"
+                                            href="{{ route('laporan.create', ['destinasi' => $item->id_destinasi]) }}"
                                             class="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                                         >
                                             Lihat & Lapor

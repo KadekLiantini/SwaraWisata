@@ -39,9 +39,6 @@
                         <a href="{{ $link('wisatawan.profil') }}" class="flex items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-semibold text-muted hover:bg-soft hover:text-primary">
                             <x-icon name="account_circle" size="18" /> Profil Saya
                         </a>
-                        <a href="{{ $link('laporan.create') }}" class="flex items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-semibold text-muted hover:bg-soft hover:text-primary">
-                            <x-icon name="campaign" size="18" /> Laporkan Kerusakan
-                        </a>
                     @else
                         <a href="{{ $akun->dashboardRoute() }}" class="flex items-center gap-2 rounded-lg px-3 py-2 font-heading text-sm font-semibold text-muted hover:bg-soft hover:text-primary">
                             <x-icon name="grid_view" size="18" /> Dashboard
