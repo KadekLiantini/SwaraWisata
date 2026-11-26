@@ -121,7 +121,7 @@
 
                                 {{-- Foto lainnya --}}
                                 <div class="grid min-h-0 grid-rows-{{ min($laporan->foto->count() - 1, 2) }} gap-2.5">
-                                    @foreach ($laporan->foto->skip(1) as $index => $foto)
+                                    @foreach ($laporan->foto->skip(1)->values() as $index => $foto)
                                         <div class="relative min-h-0 overflow-hidden rounded-xl">
                                             <img
                                                 src="{{ $foto->url }}"
