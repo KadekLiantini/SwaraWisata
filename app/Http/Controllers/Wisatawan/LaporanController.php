@@ -24,7 +24,8 @@ class LaporanController extends Controller
             'kategoriWisata',
         ]);
 
-        $kategoriKerusakan = KategoriKerusakan::orderBy('nama')->get();
+        $kategoriKerusakan = KategoriKerusakan::orderByRaw("
+            CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")->orderBy('nama')->get();
 
         // Mengambil seluruh laporan pada destinasi ini
         $laporanDasar = Laporan::where('id_destinasi', $destinasi->id_destinasi);
@@ -148,7 +149,8 @@ class LaporanController extends Controller
             'riwayat.komentar.balasan.penulis',
         ]);
 
-        $kategoriKerusakan = KategoriKerusakan::orderBy('nama')->get();
+        $kategoriKerusakan = KategoriKerusakan::orderByRaw("
+            CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")->orderBy('nama')->get();
 
         $riwayatTerakhir = $laporan->riwayat->last();
 

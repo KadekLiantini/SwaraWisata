@@ -15,7 +15,7 @@ class KategoriSeeder extends Seeder
     public function run(): void
     {
         foreach (['Pantai', 'Pura', 'Air Terjun', 'Danau', 'Gunung', 'Taman', 'Sawah/Terasering', 'Desa Wisata', 'Museum', 'Hutan'] as $nama) {
-            KategoriWisata::create(['nama' => $nama]);
+            KategoriWisata::firstOrCreate(['nama' => $nama]);
         }
 
         $kerusakan = [
@@ -27,10 +27,24 @@ class KategoriSeeder extends Seeder
             'Pagar Pengaman'          => 'Pagar atau pembatas rusak sehingga membahayakan.',
             'Tempat Sampah'           => 'Tempat sampah rusak atau tidak tersedia.',
             'Papan Informasi'         => 'Papan petunjuk rusak, hilang, atau tidak terbaca.',
-            'Fasilitas Umum Lainnya'  => 'Tempat ibadah, tempat istirahat, dan fasilitas lain.',
+            'Lainnya'                 => 'Tempat ibadah, tempat istirahat, dan fasilitas lain.',
         ];
         foreach ($kerusakan as $nama => $deskripsi) {
-            KategoriKerusakan::create(compact('nama', 'deskripsi'));
+            $kategori = $nama === 'Lainnya'
+                ? KategoriKerusakan::whereIn('nama', ['Fasilitas Umum Lainnya', 'Lainnya'])->first()
+                : null;
+
+            if ($kategori) {
+                $kategori->update([
+                    'nama' => $nama,
+                    'deskripsi' => $deskripsi,
+                ]);
+            } else {
+                KategoriKerusakan::firstOrCreate(
+                    ['nama' => $nama],
+                    ['deskripsi' => $deskripsi]
+                );
+            }
         }
     }
 }
