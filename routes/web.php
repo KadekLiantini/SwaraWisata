@@ -36,6 +36,11 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
     // Detail laporan milik wisatawan
     Route::get('/laporan/{laporan:id_laporan}', [LaporanController::class, 'show'])
         ->name('laporan.show');
+    Route::put('/laporan/{laporan:id_laporan}', [LaporanController::class, 'update'])
+    ->name('laporan.update');
+    // Hapus laporan milik wisatawan
+    Route::delete('/laporan/{laporan:id_laporan}', [LaporanController::class, 'destroy'])
+        ->name('laporan.destroy');
 });
 
 // Pengelola

@@ -113,7 +113,7 @@
                                         onclick="window.open('{{ $laporan->foto->first()->url }}', '_blank')"
                                         class="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/90"
                                     >
-                                        <x-icon name="zoom-in" size="14" />
+                                        <x-icon name="zoom_in" size="14" />
                                         Perbesar
                                     </button>
                                 </div>
@@ -251,9 +251,10 @@
 
                         <div class="flex flex-wrap gap-2">
                             <button
+                                id="btn-edit-laporan"
                                 type="button"
                                 @disabled(!($laporanSaya && $bolehDiubah))
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#dee8ff] px-3.5 py-2.5 text-sm font-medium text-[#111c2d] transition hover:brightness-95 disabled:cursor-not-allowed disabled:text-[#8d99ac]"
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#005F49] px-3.5 py-2.5 text-sm font-medium text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:text-[#8d99ac]"
                             >
                                 @if ($laporanSaya && $bolehDiubah)
                                     <x-icon name="edit" size="17" />
@@ -263,23 +264,32 @@
                                 Edit Laporan
                             </button>
 
-                            <button
-                                type="button"
-                                @disabled(!($laporanSaya && $bolehDiubah))
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#dee8ff] px-3.5 py-2.5 text-sm font-medium text-[#111c2d] transition hover:brightness-95 disabled:cursor-not-allowed disabled:text-[#8d99ac]"
+                            <form
+                                action="{{ route('laporan.destroy', $laporan->id_laporan) }}"
+                                method="POST"
+                                onsubmit="return confirm('Yakin ingin menghapus laporan ini?')"
                             >
-                                @if ($laporanSaya && $bolehDiubah)
-                                    <x-icon name="delete" size="17" />
-                                @else
-                                    <x-icon name="lock" size="17" />
-                                @endif
-                                Hapus Laporan
-                            </button>
+                                @csrf
+                                @method('DELETE')
+
+                                <button
+                                    type="submit"
+                                    @disabled(!($laporanSaya && $bolehDiubah))
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-[#BA1A1A] px-3.5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90 disabled:cursor-not-allowed disabled:text-[#8d99ac] disabled:hover:translate-y-0 disabled:hover:brightness-100"
+                                >
+                                    @if ($laporanSaya && $bolehDiubah)
+                                        <x-icon name="delete" size="17" />
+                                    @else
+                                        <x-icon name="lock" size="17" />
+                                    @endif
+                                    Hapus Laporan
+                                </button>
+                            </form>
 
                             <button
                                 type="button"
                                 onclick="navigator.clipboard.writeText(window.location.href)"
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#e7eeff] px-3.5 py-2.5 text-sm font-medium text-[#111c2d] transition hover:brightness-95"
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#e7eeff] px-3.5 py-2.5 text-sm font-medium text-[#111c2d] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90"
                             >
                                 <x-icon name="share" size="17" />
                                 Salin Tautan Publik
@@ -612,6 +622,166 @@
                     </div>
                 @endif
             </section>
+        </div>
+    </div>
+
+    {{-- Modal Edit Laporan --}}
+    <div
+        id="modal-edit-laporan"
+        class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4"
+    >
+        <div class="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+
+            {{-- Header Modal --}}
+            <div class="mb-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+                        <x-icon name="camera_alt" size="24" />
+                    </span>
+
+                    <div>
+                        <h2 class="font-heading text-xl font-bold text-ink">
+                            Edit Laporan
+                        </h2>
+                        <p class="text-sm text-muted">
+                            Perbarui informasi laporan kerusakan
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    id="btn-tutup-modal-edit"
+                    type="button"
+                    class="flex size-9 items-center justify-center rounded-lg text-muted transition hover:bg-soft hover:text-ink"
+                >
+                    <x-icon name="close" size="22" />
+                </button>
+            </div>
+            <form
+                action="{{ route('laporan.update', $laporan->id_laporan) }}"
+                method="POST"
+                enctype="multipart/form-data"
+                class="space-y-5"
+            >
+                @csrf
+                @method('PUT')
+
+                {{-- Destinasi Terpilih --}}
+                <div>
+                    <div class="mb-2 flex items-center justify-between">
+                        <label class="font-heading text-sm font-medium text-ink">
+                            Destinasi Terpilih
+                        </label>
+                        <span class="flex items-center gap-1 text-xs font-medium text-muted">
+                            <x-icon name="lock" size="14" />
+                            Terkunci Otomatis
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2 rounded-xl bg-soft-strong px-4 py-3 font-heading text-sm font-semibold text-ink">
+                        <x-icon name="flag" size="18" class="text-primary" />
+                        {{ $laporan->destinasi->nama }}
+                    </div>
+                </div>
+
+                {{-- Judul --}}
+                <x-form.input
+                    name="judul"
+                    label="Judul Laporan Kerusakan"
+                    placeholder="Masukkan judul kerusakan"
+                    maxlength="80"
+                    counter
+                    required
+                    variant="soft"
+                    :value="$laporan->judul"
+                />
+
+                {{-- Kategori --}}
+                <x-form.select
+                    name="id_kategori_kerusakan"
+                    label="Kategori Kerusakan"
+                    :options="$kategoriKerusakan->pluck('nama', 'id_kategori_kerusakan')"
+                    :value="$laporan->id_kategori_kerusakan"
+                    placeholder="Pilih kategori"
+                    required
+                />
+
+                {{-- Lokasi Spesifik --}}
+                <x-form.input
+                    name="lokasi_spesifik"
+                    label="Lokasi Spesifik Titik Kerusakan"
+                    placeholder="Sebutkan titik lokasi kerusakan"
+                    icon="location_on"
+                    required
+                    variant="soft"
+                    :value="$laporan->lokasi_spesifik"
+                />
+
+                {{-- Deskripsi --}}
+                <x-form.textarea
+                    name="deskripsi"
+                    label="Deskripsi Kerusakan Terperinci"
+                    placeholder="Jelaskan kondisi kerusakan secara terperinci..."
+                    rows="4"
+                    maxlength="1000"
+                    required
+                    class="bg-soft"
+                >{{ $laporan->deskripsi }}</x-form.textarea>
+
+                {{-- Bukti Foto --}}
+                <div>
+                    <label class="mb-2 block font-heading text-sm font-medium text-ink">
+                        Bukti Foto Kerusakan
+                    </label>
+
+                    <div class="mb-3 flex flex-wrap gap-3">
+                        @foreach ($laporan->foto as $foto)
+                            <img
+                                src="{{ $foto->url }}"
+                                alt="Foto laporan"
+                                class="size-20 rounded-lg object-cover"
+                            >
+                        @endforeach
+                    </div>
+
+                    <label
+                        for="foto-edit"
+                        class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed border-[#b6c6e3] bg-soft p-6 text-center transition hover:bg-soft-strong"
+                    >
+                        <x-icon name="cloud_upload" size="24" />
+                        <span class="text-sm text-ink">
+                            Tambahkan foto baru
+                            <span class="font-semibold text-primary underline">Pilih File</span>
+                        </span>
+                        <span class="text-xs text-muted">Maksimal 3 gambar (JPG/PNG)</span>
+                    </label>
+
+                    <input
+                        type="file"
+                        name="foto[]"
+                        id="foto-edit"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        data-max-foto-baru="{{ max(0, 3 - $laporan->foto->count()) }}"
+                        class="hidden"
+                    >
+                </div>
+
+                {{-- Tombol --}}
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button
+                        type="button"
+                        id="btn-batal-edit"
+                        class="rounded-xl px-5 py-3 font-heading text-sm font-medium text-ink transition hover:bg-soft"
+                    >
+                        Batal
+                    </button>
+
+                    <x-button type="submit" size="lg" icon="save">
+                        Simpan Perubahan
+                    </x-button>
+                </div>
+            </form>
         </div>
     </div>
 </x-layouts.public>
