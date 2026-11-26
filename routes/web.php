@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Wisatawan\LaporanController;
 use App\Http\Controllers\Wisatawan\ProfilController;
 use App\Http\Controllers\Admin\DestinasiController;
+use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -50,8 +51,41 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
 });
 
 // Pengelola
-Route::middleware(['auth', 'role:pengelola'])->prefix('pengelola')->name('pengelola.')->group(function () {
-    Route::view('/dashboard', 'pengelola.dashboard')->name('dashboard');
+Route::middleware(['auth', 'role:pengelola'])
+->prefix('pengelola')
+->name('pengelola.')
+->group(function () {
+Route::get('/dashboard', [
+    \App\Http\Controllers\Pengelola\PengelolaDashboardController::class,
+    'index'
+])->name('dashboard');
+
+// Daftar semua laporan
+Route::get('/laporan', [
+    PengelolaLaporanController::class,
+    'index'
+])->name('laporan.index');
+
+// Detail laporan
+Route::get('/laporan/{laporan}', [
+    PengelolaLaporanController::class,
+    'show'
+])->name('laporan.show');
+
+Route::post('/laporan/{laporan}/riwayat', [
+    PengelolaLaporanController::class,
+    'storeRiwayat'
+])->name('laporan.riwayat.store');
+
+Route::put('/laporan/{laporan}/riwayat/{riwayat}', [
+    PengelolaLaporanController::class,
+    'updateRiwayat'
+])->name('laporan.riwayat.update');
+
+Route::delete('/laporan/{laporan}/riwayat/{riwayat}', [
+    PengelolaLaporanController::class,
+    'destroyRiwayat'
+])->name('laporan.riwayat.destroy');
 });
 
 // Admin
