@@ -7,6 +7,7 @@ use App\Http\Controllers\Wisatawan\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Wisatawan\LaporanController;
 use App\Http\Controllers\Wisatawan\ProfilController;
+use App\Http\Controllers\Admin\DestinasiController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -56,4 +57,12 @@ Route::middleware(['auth', 'role:pengelola'])->prefix('pengelola')->name('pengel
 // Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::view('/dashboard', 'admin.dashboard')->name('dashboard');
+
+    Route::get('/destinasi', [DestinasiController::class, 'index'])->name('destinasi.index');
+    Route::get('/destinasi/create', [DestinasiController::class, 'create'])->name('destinasi.create');
+    Route::post('/destinasi', [DestinasiController::class, 'store'])->name('destinasi.store');
+    Route::get('/destinasi/{id_destinasi}/edit', [DestinasiController::class, 'edit'])->name('destinasi.edit');
+    Route::put('/destinasi/{id_destinasi}', [DestinasiController::class, 'update'])->name('destinasi.update');
+    Route::get('/destinasi/{id_destinasi}/delete', [DestinasiController::class, 'delete'])->name('destinasi.delete');
+    Route::delete('/destinasi/{id_destinasi}', [DestinasiController::class, 'destroy'])->name('destinasi.destroy');
 });

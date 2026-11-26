@@ -1,6 +1,7 @@
 import "./laporan.js";
 import "./live-search";
 import "./modal-edit-laporan";
+import "./admin-destinasi.js";
 
 /*
  | Interaksi kecil untuk komponen form SwaraWisata.
@@ -28,8 +29,6 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // Cek kecocokan: <input data-match="password"> (dipakai konfirmasi password)
     document.querySelectorAll("[data-match]").forEach((input) => {
         const target = document.getElementById(input.dataset.match);
         const hint = document.getElementById(`${input.id}-hint`);
@@ -67,9 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Penghitung karakter: <span data-counter-for="id-input">0/20</span>
-// Memakai delegasi event, jadi juga bekerja untuk form yang dimuat belakangan (modal edit)
-document.addEventListener('input', (event) => {
+document.addEventListener("input", (event) => {
     const input = event.target;
     if (!input.id) return;
 
