@@ -89,56 +89,93 @@
                             <x-icon name="photo_library" size="20" class="text-[#008568]" />
                             Bukti Fotografi Kerusakan
                         </h2>
-
+                        
                         @if ($laporan->foto->isNotEmpty())
-                            <div class="grid h-[340px] grid-cols-[2fr_1fr] gap-2.5 overflow-hidden rounded-xl">
+                            <div class="mb-8">
+                                <div class="mb-3 flex items-center justify-between">
+                                    <h3 class="text-sm font-semibold text-ink">
+                                        Foto Bukti Wisatawan
+                                    </h3>
 
-                                {{-- Foto utama --}}
-                                <div class="group relative min-w-0 overflow-hidden rounded-xl">
-                                    <img
-                                        src="{{ $laporan->foto->first()->url }}"
-                                        alt="Foto bukti utama"
-                                        class="h-full w-full object-cover"
-                                    >
+                                    <div class="flex items-center gap-2">
+                                        {{-- Tombol geser kiri --}}
+                                        <button
+                                            type="button"
+                                            id="geser-foto-kiri"
+                                            class="flex size-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                            aria-label="Foto sebelumnya"
+                                        >
+                                            <svg class="size-5" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="m15 18-6-6 6-6" />
+                                            </svg>
+                                        </button>
 
-                                    <div class="absolute left-2.5 top-2.5 rounded-full bg-[#344253]/80 px-2.5 py-1 text-xs font-semibold text-white">
-                                        <span class="inline-flex items-center gap-1">
-                                            <x-icon name="camera" size="14" />
-                                            Foto Bukti Wisatawan (1 dari {{ $laporan->foto->count() }})
-                                        </span>
+                                        {{-- Tombol geser kanan --}}
+                                        <button
+                                            type="button"
+                                            id="geser-foto-kanan"
+                                            class="flex size-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                            aria-label="Foto berikutnya"
+                                        >
+                                            <svg class="size-5" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <path d="m9 18 6-6-6-6" />
+                                            </svg>
+                                        </button>
                                     </div>
-
-                                    <button
-                                        type="button"
-                                        id="btn-perbesar-foto"
-                                        data-foto-url="{{ $laporan->foto->first()->url }}"
-                                        class="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/90"
-                                    >
-                                        <x-icon name="zoom_in" size="14" />
-                                        Perbesar
-                                    </button>
                                 </div>
 
-                                {{-- Foto lainnya --}}
-                                <div class="grid min-h-0 grid-rows-{{ min($laporan->foto->count() - 1, 2) }} gap-2.5">
-                                    @foreach ($laporan->foto->skip(1)->values() as $index => $foto)
-                                        <div class="relative min-h-0 overflow-hidden rounded-xl">
-                                            <img
-                                                src="{{ $foto->url }}"
-                                                alt="Foto bukti {{ $index + 2 }}"
-                                                class="h-full w-full object-cover"
-                                            >
+                                {{-- Carousel foto --}}
+                                @if ($laporan->foto->isNotEmpty())
+                                    <div class="mb-8">
+                                        <div
+                                            id="carousel-foto-laporan"
+                                            class="flex gap-2 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
+                                        >
+                                            @foreach ($laporan->foto as $index => $foto)
+                                                <div
+                                                    class="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-xl bg-gray-100 sm:w-[48%]"
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        class="block h-full w-full"
+                                                        data-perbesar-foto
+                                                        data-foto-url="{{ $foto->url }}"
+                                                        data-keterangan-foto="Foto {{ $index + 1 }} dari {{ $laporan->foto->count() }}"
+                                                        aria-label="Perbesar foto {{ $index + 1 }}"
+                                                    >
+                                                        <img
+                                                            src="{{ $foto->url }}"
+                                                            alt="Foto bukti wisatawan {{ $index + 1 }}"
+                                                            class="h-[336px] w-full object-cover"
+                                                        >
+                                                    </button>
 
-                                            <span class="absolute left-2.5 top-2.5 rounded-full bg-[#344253]/80 px-2.5 py-1 text-xs font-semibold text-white">
-                                                Foto {{ $index + 2 }} dari {{ $laporan->foto->count() }}
-                                            </span>
+                                                    <span class="absolute left-2.5 top-2.5 rounded-lg bg-black/60 px-3 py-1.5 text-xs font-medium text-white">
+                                                        @if ($index === 0)
+                                                            <x-icon name="photo_camera" size="14" class="inline" />
+                                                            Foto Bukti Wisatawan ({{ $index + 1 }} dari {{ $laporan->foto->count() }})
+                                                        @else
+                                                            Foto {{ $index + 1 }} dari {{ $laporan->foto->count() }}
+                                                        @endif
+                                                    </span>
+
+                                                    <button
+                                                        type="button"
+                                                        data-perbesar-foto
+                                                        data-foto-url="{{ $foto->url }}"
+                                                        data-keterangan-foto="Foto {{ $index + 1 }} dari {{ $laporan->foto->count() }}"
+                                                        class="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-black/50 px-2.5 py-1.5 text-xs font-medium text-white transition hover:bg-black/70"
+                                                    >
+                                                        <x-icon name="search" size="14" />
+                                                        Perbesar
+                                                    </button>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @else
-                            <div class="rounded-xl bg-[#f0f3ff] p-8 text-center text-sm text-[#6e7a74]">
-                                Tidak ada foto laporan.
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -711,7 +748,7 @@
                     name="id_kategori_kerusakan"
                     label="Kategori Kerusakan"
                     :options="$kategoriKerusakan->pluck('nama', 'id_kategori_kerusakan')"
-                    :value="$laporan->id_kategori_kerusakan"
+                    :selected="$laporan->id_kategori_kerusakan"
                     placeholder="Pilih kategori"
                     required
                 />
@@ -736,7 +773,8 @@
                     maxlength="1000"
                     required
                     class="bg-soft"
-                >{{ $laporan->deskripsi }}</x-form.textarea>
+                    :value="$laporan->deskripsi"
+                />
 
                 {{-- Bukti Foto --}}
                 <div>
@@ -744,15 +782,40 @@
                         Bukti Foto Kerusakan
                     </label>
 
-                    <div class="mb-3 flex flex-wrap gap-3">
+                    {{-- Foto lama dan preview foto baru --}}
+                    <div
+                        id="daftar-foto-edit"
+                        class="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3"
+                    >
                         @foreach ($laporan->foto as $foto)
-                            <img
-                                src="{{ $foto->url }}"
-                                alt="Foto laporan"
-                                class="size-20 rounded-lg object-cover"
+                            <div
+                                class="relative overflow-hidden rounded-xl border border-black/5 bg-white p-2"
+                                data-foto-lama
                             >
+                                <img
+                                    src="{{ $foto->url }}"
+                                    alt="Foto laporan"
+                                    class="h-28 w-full rounded-lg object-cover"
+                                >
+
+                                <p class="mt-2 truncate text-xs font-medium text-ink">
+                                    Foto sebelumnya
+                                </p>
+
+                                <button
+                                    type="button"
+                                    class="btn-hapus-foto-lama absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white shadow-md transition hover:bg-red-600"
+                                    data-id="{{ $foto->id_foto_laporan }}"
+                                    title="Hapus foto"
+                                >
+                                    ×
+                                </button>
+                            </div>
                         @endforeach
                     </div>
+
+                    {{-- ID foto lama yang akan dihapus --}}
+                    <div id="foto-hapus-container"></div>
 
                     <label
                         for="foto-edit"
@@ -763,7 +826,9 @@
                             Tambahkan foto baru
                             <span class="font-semibold text-primary underline">Pilih File</span>
                         </span>
-                        <span class="text-xs text-muted">Maksimal 3 gambar (JPG/PNG)</span>
+                        <span class="text-xs text-muted">
+                            Maksimal 3 foto secara keseluruhan (JPG/PNG/WEBP)
+                        </span>
                     </label>
 
                     <input
@@ -772,7 +837,7 @@
                         id="foto-edit"
                         accept="image/jpeg,image/png,image/webp"
                         multiple
-                        data-max-foto-baru="{{ max(0, 3 - $laporan->foto->count()) }}"
+                        data-jumlah-foto-lama="{{ $laporan->foto->count() }}"
                         class="hidden"
                     >
                 </div>

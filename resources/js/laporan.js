@@ -29,16 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
     tombolTutup?.addEventListener('click', tutupModalEdit);
     tombolBatal?.addEventListener('click', tutupModalEdit);
 
-    // Modal Perbesar Foto
-    const tombolPerbesarFoto = document.getElementById('btn-perbesar-foto');
+    
+    // Carousel dan Modal Perbesar Foto
+    const carouselFoto = document.getElementById('carousel-foto-laporan');
+    const tombolGeserKiri = document.getElementById('geser-foto-kiri');
+    const tombolGeserKanan = document.getElementById('geser-foto-kanan');
+
     const modalFoto = document.getElementById('modal-foto');
     const gambarModal = document.getElementById('gambar-modal');
+    const keteranganFotoModal = document.getElementById('keterangan-foto-modal');
     const tombolTutupFoto = document.getElementById('btn-tutup-foto');
 
-    function bukaFoto() {
-        if (!modalFoto || !gambarModal || !tombolPerbesarFoto) return;
+    function bukaFoto(url, keterangan) {
+        if (!modalFoto || !gambarModal) return;
 
-        gambarModal.src = tombolPerbesarFoto.dataset.fotoUrl;
+        gambarModal.src = url;
+
+        if (keteranganFotoModal) {
+            keteranganFotoModal.textContent = keterangan;
+        }
+
         modalFoto.classList.remove('hidden');
         modalFoto.classList.add('flex');
         document.body.classList.add('overflow-hidden');
@@ -51,10 +61,25 @@ document.addEventListener('DOMContentLoaded', () => {
         modalFoto.classList.remove('flex');
         gambarModal.src = '';
 
+        if (keteranganFotoModal) {
+            keteranganFotoModal.textContent = '';
+        }
+
         document.body.classList.remove('overflow-hidden');
     }
 
-    tombolPerbesarFoto?.addEventListener('click', bukaFoto);
+    // Klik foto mana pun untuk memperbesar
+    carouselFoto?.addEventListener('click', event => {
+        const tombolFoto = event.target.closest('[data-perbesar-foto]');
+
+        if (!tombolFoto) return;
+
+        bukaFoto(
+            tombolFoto.dataset.fotoUrl,
+            tombolFoto.dataset.keteranganFoto
+        );
+    });
+
     tombolTutupFoto?.addEventListener('click', tutupFoto);
 
     modalFoto?.addEventListener('click', event => {
@@ -62,6 +87,51 @@ document.addEventListener('DOMContentLoaded', () => {
             tutupFoto();
         }
     });
+
+    // Mengatur kondisi tombol panah
+    function perbaruiTombolCarousel() {
+        if (!carouselFoto) return;
+
+        const maksimalScroll =
+            carouselFoto.scrollWidth - carouselFoto.clientWidth;
+
+        tombolGeserKiri.disabled = carouselFoto.scrollLeft <= 2;
+        tombolGeserKanan.disabled =
+            carouselFoto.scrollLeft >= maksimalScroll - 2;
+    }
+
+    // Geser satu foto ke kiri
+    tombolGeserKiri?.addEventListener('click', () => {
+        if (!carouselFoto) return;
+
+        const lebarFoto =
+            carouselFoto.querySelector('[data-perbesar-foto]')?.offsetWidth || 0;
+
+        carouselFoto.scrollBy({
+            left: -(lebarFoto + 12),
+            behavior: 'smooth'
+        });
+    });
+
+    // Geser satu foto ke kanan
+    tombolGeserKanan?.addEventListener('click', () => {
+        if (!carouselFoto) return;
+
+        const lebarFoto =
+            carouselFoto.querySelector('[data-perbesar-foto]')?.offsetWidth || 0;
+
+        carouselFoto.scrollBy({
+            left: lebarFoto + 12,
+            behavior: 'smooth'
+        });
+    });
+
+    carouselFoto?.addEventListener('scroll', perbaruiTombolCarousel);
+
+    window.addEventListener('resize', perbaruiTombolCarousel);
+
+    perbaruiTombolCarousel();
+
 
     modalEdit?.addEventListener('click', event => {
         if (event.target === modalEdit) {
@@ -76,18 +146,123 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Validasi jumlah foto baru pada modal edit
+    // Preview dan Hapus Foto pada Modal Edit
     const inputFotoEdit = document.getElementById('foto-edit');
+    const daftarFotoEdit = document.getElementById('daftar-foto-edit');
+    const containerFotoHapus = document.getElementById('foto-hapus-container');
 
-    inputFotoEdit?.addEventListener('change', function () {
-        const maksimalFotoBaru = Number(this.dataset.maxFotoBaru);
+    let fotoBaruEdit = [];
 
-        if (this.files.length > maksimalFotoBaru) {
-            alert(`Kamu hanya dapat menambahkan maksimal ${maksimalFotoBaru} foto lagi.`);
-            this.value = '';
-        }
+    function jumlahFotoLamaTersisa() {
+        return daftarFotoEdit.querySelectorAll('[data-foto-lama]').length;
+    }
+
+    function perbaruiFileInputEdit() {
+        const transfer = new DataTransfer();
+
+        fotoBaruEdit.forEach(item => {
+            transfer.items.add(item.file);
+        });
+
+        inputFotoEdit.files = transfer.files;
+    }
+
+    function tampilkanPreviewFotoEdit() {
+        // Hapus preview foto baru sebelumnya, tetapi pertahankan foto lama.
+        daftarFotoEdit.querySelectorAll('[data-foto-baru]').forEach(item => {
+            item.remove();
+        });
+
+        fotoBaruEdit.forEach((item, index) => {
+            const wadah = document.createElement('div');
+            wadah.className = 'relative overflow-hidden rounded-xl border border-black/5 bg-white p-2';
+            wadah.dataset.fotoBaru = '';
+
+            const gambar = document.createElement('img');
+            gambar.src = item.url;
+            gambar.alt = 'Preview foto baru';
+            gambar.className = 'h-28 w-full rounded-lg object-cover';
+
+            const nama = document.createElement('p');
+            nama.className = 'mt-2 truncate text-xs font-medium text-ink';
+            nama.textContent = item.file.name;
+
+            const tombolHapus = document.createElement('button');
+            tombolHapus.type = 'button';
+            tombolHapus.textContent = '×';
+            tombolHapus.title = 'Hapus foto';
+            tombolHapus.className = 'absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white shadow-md transition hover:bg-red-600';
+
+            tombolHapus.addEventListener('click', () => {
+                URL.revokeObjectURL(item.url);
+                fotoBaruEdit.splice(index, 1);
+
+                perbaruiFileInputEdit();
+                tampilkanPreviewFotoEdit();
+            });
+
+            wadah.append(gambar, nama, tombolHapus);
+            daftarFotoEdit.appendChild(wadah);
+        });
+    }
+
+    // Hapus foto lama
+    daftarFotoEdit?.querySelectorAll('.btn-hapus-foto-lama').forEach(tombol => {
+        tombol.addEventListener('click', function () {
+            const kartuFoto = this.closest('[data-foto-lama]');
+            const idFoto = this.dataset.id;
+
+            if (!kartuFoto || !idFoto) return;
+
+            const inputHapus = document.createElement('input');
+            inputHapus.type = 'hidden';
+            inputHapus.name = 'foto_dihapus[]';
+            inputHapus.value = idFoto;
+
+            containerFotoHapus.appendChild(inputHapus);
+            kartuFoto.remove();
+
+            // Perbarui jumlah foto baru yang boleh ditambahkan.
+            inputFotoEdit.dataset.maxFotoBaru =
+                3 - jumlahFotoLamaTersisa();
+
+            perbaruiFileInputEdit();
+        });
     });
 
+    // Pilih foto baru
+    inputFotoEdit?.addEventListener('change', function () {
+        const maksimalFotoBaru = 3 - jumlahFotoLamaTersisa();
+        const files = Array.from(this.files);
+
+        const formatDiizinkan = [
+            'image/jpeg',
+            'image/png',
+            'image/webp'
+        ];
+
+        if (fotoBaruEdit.length + files.length > maksimalFotoBaru) {
+            alert(`Kamu hanya dapat menambahkan maksimal ${maksimalFotoBaru - fotoBaruEdit.length} foto lagi.`);
+            this.value = '';
+            return;
+        }
+
+        if (files.some(file => !formatDiizinkan.includes(file.type))) {
+            alert('Format foto harus JPG, PNG, atau WEBP.');
+            this.value = '';
+            return;
+        }
+
+        files.forEach(file => {
+            fotoBaruEdit.push({
+                file: file,
+                url: URL.createObjectURL(file)
+            });
+        });
+
+        perbaruiFileInputEdit();
+        tampilkanPreviewFotoEdit();
+    });
     if (!inputFoto || !previewFoto || !areaUpload) return;
 
     let daftarFoto = [];

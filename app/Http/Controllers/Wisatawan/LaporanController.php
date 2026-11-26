@@ -10,6 +10,7 @@ use App\Models\Laporan;
 use App\Models\FotoLaporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Akun;
 use App\Models\RiwayatPenanganan;
 
@@ -292,13 +293,33 @@ class LaporanController extends Controller
             'deskripsi' => ['required', 'string', 'max:1000'],
             'foto' => ['nullable', 'array'],
             'foto.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'foto_dihapus' => ['nullable', 'array'],
+            'foto_dihapus.*' => ['integer', 'distinct'],
         ]);
 
-        $jumlahFotoLama = $laporan->foto()->count();
         $fotoBaru = $request->file('foto', []);
+        $idFotoDihapus = $validated['foto_dihapus'] ?? [];
 
-        // Maksimal 3 foto, termasuk foto yang sudah tersimpan
-        if ($jumlahFotoLama + count($fotoBaru) > 3) {
+        // Ambil foto lama yang benar-benar terhubung dengan laporan ini
+        $fotoLamaDihapus = $laporan->foto()
+            ->whereIn('id_foto_laporan', $idFotoDihapus)
+            ->get();
+
+        // Pastikan ID foto yang dikirim memang milik laporan ini
+        if ($fotoLamaDihapus->count() !== count($idFotoDihapus)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'foto' => 'Terdapat foto yang tidak valid untuk dihapus.',
+                ]);
+        }
+
+        // Hitung jumlah foto setelah penghapusan dan penambahan
+        $jumlahFotoTersisa = $laporan->foto()->count()
+            - $fotoLamaDihapus->count()
+            + count($fotoBaru);
+
+        if ($jumlahFotoTersisa > 3) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -306,8 +327,7 @@ class LaporanController extends Controller
                 ]);
         }
 
-        // Minimal harus ada 1 foto
-        if ($jumlahFotoLama + count($fotoBaru) < 1) {
+        if ($jumlahFotoTersisa < 1) {
             return back()
                 ->withInput()
                 ->withErrors([
@@ -315,7 +335,16 @@ class LaporanController extends Controller
                 ]);
         }
 
-        DB::transaction(function () use ($validated, $laporan, $fotoBaru) {
+        // Simpan path foto lama untuk dihapus dari storage setelah transaksi
+        $pathFotoDihapus = [];
+
+        DB::transaction(function () use (
+            $validated,
+            $laporan,
+            $fotoBaru,
+            $fotoLamaDihapus,
+            &$pathFotoDihapus
+        ) {
             $laporan->update([
                 'id_kategori_kerusakan' => $validated['id_kategori_kerusakan'],
                 'judul' => $validated['judul'],
@@ -323,6 +352,13 @@ class LaporanController extends Controller
                 'deskripsi' => $validated['deskripsi'],
             ]);
 
+            // Hapus data foto lama dari database
+            foreach ($fotoLamaDihapus as $foto) {
+                $pathFotoDihapus[] = $foto->path;
+                $foto->delete();
+            }
+
+            // Simpan foto baru
             foreach ($fotoBaru as $foto) {
                 FotoLaporan::create([
                     'id_laporan' => $laporan->id_laporan,
@@ -330,6 +366,11 @@ class LaporanController extends Controller
                 ]);
             }
         });
+
+        // Hapus file foto lama dari storage
+        if (!empty($pathFotoDihapus)) {
+            Storage::disk('public')->delete($pathFotoDihapus);
+        }
 
         return redirect()
             ->route('laporan.show', $laporan->id_laporan)
