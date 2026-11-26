@@ -456,7 +456,7 @@
                                 </span>
 
                                 {{-- Link Detail --}}
-                                <a href="#"
+                                <a href="{{ route('laporan.show', $item->id_laporan) }}"
                                     class="inline-flex shrink-0 items-center gap-1.5 text-[#005f49] transition-transform duration-200 hover:-translate-y-0.5">
                                     Lihat Detail & Riwayat Penanganan
                                     <x-icon name="arrow_forward" size="16" />

@@ -10,6 +10,8 @@ use App\Models\Laporan;
 use App\Models\FotoLaporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Akun;
+use App\Models\RiwayatPenanganan;
 
 class LaporanController extends Controller
 {
@@ -129,6 +131,105 @@ class LaporanController extends Controller
         ));
     }
 
+    public function show(Laporan $laporan): View
+    {
+        // Ambil seluruh data laporan dan relasinya
+        $laporan->load([
+            'pelapor',
+            'destinasi.kecamatan.kabupaten',
+            'destinasi.kategoriWisata',
+            'kategoriKerusakan',
+            'foto',
+            'riwayat.pengelola',
+            'riwayat.foto',
+            'riwayat.komentar.penulis',
+            'riwayat.komentar.balasan.penulis',
+        ]);
+
+        $kategoriKerusakan = KategoriKerusakan::orderBy('nama')->get();
+
+        $riwayatTerakhir = $laporan->riwayat->last();
+
+        $riwayatTindakLanjut = $laporan->riwayat
+            ->where('jenis_tindakan', RiwayatPenanganan::TINDAK_LANJUT)
+            ->values();
+
+        $riwayatPenyelesaian = $laporan->riwayat
+            ->firstWhere('jenis_tindakan', RiwayatPenanganan::PENYELESAIAN);
+
+        $jumlahKomentar = $laporan->riwayat->sum(
+            fn ($riwayat) => $riwayat->komentar->sum(
+                fn ($komentar) => 1 + $komentar->balasan->count()
+            )
+        );
+
+        $pengelolaDestinasi = Akun::query()
+            ->where('id_destinasi', $laporan->id_destinasi)
+            ->where('role', Akun::ROLE_PENGELOLA)
+            ->first();
+
+        $laporanSaya = $laporan->milik(auth()->user());
+
+        // Edit dan hapus hanya diperbolehkan sebelum ditindaklanjuti
+        $bolehDiubah = in_array($laporan->status, [
+            Laporan::STATUS_BELUM_DILIHAT,
+            Laporan::STATUS_DILIHAT,
+        ], true);
+
+        // Ambil 2 laporan lain dari destinasi yang sama
+        $laporanLain = Laporan::with([
+            'pelapor',
+            'kategoriKerusakan',
+            'foto',
+            'riwayat.pengelola',
+            'riwayat.foto',
+        ])
+            ->where('id_destinasi', $laporan->id_destinasi)
+            ->where('id_laporan', '!=', $laporan->id_laporan)
+            ->latest()
+            ->take(2)
+            ->get()
+            ->map(function ($item) {
+                $item->status_tampilan = match ($item->status) {
+                    Laporan::STATUS_SELESAI => [
+                        'label' => 'Selesai Ditangani',
+                        'class' => 'bg-[#e5f5ef] text-[#008568]',
+                        'dot' => 'bg-[#008568]',
+                    ],
+                    Laporan::STATUS_DITINDAKLANJUTI => [
+                        'label' => 'Ditindaklanjuti',
+                        'class' => 'bg-[#fff3df] text-[#b7791f]',
+                        'dot' => 'bg-[#d99a32]',
+                    ],
+                    Laporan::STATUS_DILIHAT => [
+                        'label' => 'Telah Dilihat',
+                        'class' => 'bg-[#dee8ff] text-[#496da8]',
+                        'dot' => 'bg-[#6689c5]',
+                    ],
+                    default => [
+                        'label' => 'Belum Dilihat',
+                        'class' => 'bg-[#f1f3f7] text-[#6e7a74]',
+                        'dot' => 'bg-[#9ca3af]',
+                    ],
+                };
+
+                return $item;
+            });
+
+        return view('wisatawan.laporan.show', compact(
+            'pengelolaDestinasi',
+            'laporan',
+            'laporanLain',
+            'bolehDiubah',
+            'laporanSaya',
+            'riwayatTindakLanjut',
+            'riwayatPenyelesaian',
+            'riwayatTerakhir',
+            'jumlahKomentar',
+            'kategoriKerusakan'
+        ));
+    }
+
     public function store(Request $request, Destinasi $destinasi)
     {
         $validated = $request->validate([
@@ -162,5 +263,103 @@ class LaporanController extends Controller
         return redirect()
             ->route('laporan.create', $destinasi->id_destinasi)
             ->with('success', 'Laporan berhasil dikirim.');
+    }
+
+    public function update(Request $request, Laporan $laporan)
+    {
+        // Pastikan laporan merupakan milik wisatawan yang sedang login
+        if (!$laporan->milik(auth()->user())) {
+            abort(403, 'Kamu tidak memiliki akses untuk mengubah laporan ini.');
+        }
+
+        // Pastikan status laporan masih memungkinkan untuk diedit
+        if (!in_array($laporan->status, [
+            Laporan::STATUS_BELUM_DILIHAT,
+            Laporan::STATUS_DILIHAT,
+        ], true)) {
+            return redirect()
+                ->route('laporan.show', $laporan->id_laporan)
+                ->with('error', 'Laporan tidak dapat diubah karena sudah ditindaklanjuti.');
+        }
+
+        $validated = $request->validate([
+            'id_kategori_kerusakan' => [
+                'required',
+                'exists:kategori_kerusakan,id_kategori_kerusakan',
+            ],
+            'judul' => ['required', 'string', 'max:150'],
+            'lokasi_spesifik' => ['required', 'string', 'max:255'],
+            'deskripsi' => ['required', 'string', 'max:1000'],
+            'foto' => ['nullable', 'array'],
+            'foto.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $jumlahFotoLama = $laporan->foto()->count();
+        $fotoBaru = $request->file('foto', []);
+
+        // Maksimal 3 foto, termasuk foto yang sudah tersimpan
+        if ($jumlahFotoLama + count($fotoBaru) > 3) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'foto' => 'Total foto laporan maksimal 3 foto.',
+                ]);
+        }
+
+        // Minimal harus ada 1 foto
+        if ($jumlahFotoLama + count($fotoBaru) < 1) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'foto' => 'Laporan harus memiliki minimal 1 foto.',
+                ]);
+        }
+
+        DB::transaction(function () use ($validated, $laporan, $fotoBaru) {
+            $laporan->update([
+                'id_kategori_kerusakan' => $validated['id_kategori_kerusakan'],
+                'judul' => $validated['judul'],
+                'lokasi_spesifik' => $validated['lokasi_spesifik'],
+                'deskripsi' => $validated['deskripsi'],
+            ]);
+
+            foreach ($fotoBaru as $foto) {
+                FotoLaporan::create([
+                    'id_laporan' => $laporan->id_laporan,
+                    'path' => $foto->store('laporan', 'public'),
+                ]);
+            }
+        });
+
+        return redirect()
+            ->route('laporan.show', $laporan->id_laporan)
+            ->with('success', 'Laporan berhasil diperbarui.');
+    }
+
+    public function destroy(Laporan $laporan)
+    {
+        // Pastikan laporan merupakan milik wisatawan yang sedang login
+        if (!$laporan->milik(auth()->user())) {
+            abort(403, 'Kamu tidak memiliki akses untuk menghapus laporan ini.');
+        }
+
+        // Pastikan status laporan masih memungkinkan untuk dihapus
+        if (!in_array($laporan->status, [
+            Laporan::STATUS_BELUM_DILIHAT,
+            Laporan::STATUS_DILIHAT,
+        ], true)) {
+            return redirect()
+                ->route('laporan.show', $laporan->id_laporan)
+                ->with('error', 'Laporan tidak dapat dihapus karena sudah ditindaklanjuti.');
+        }
+
+        $idDestinasi = $laporan->id_destinasi;
+
+        // Hapus laporan menggunakan Soft Delete
+        $laporan->delete();
+
+        return redirect()
+            ->route('laporan.create', $idDestinasi)
+            ->with('success', 'Laporan berhasil dihapus.');
     }
 }

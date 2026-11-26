@@ -3,6 +3,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewFoto = document.getElementById('preview-foto');
     const areaUpload = document.getElementById('area-upload-foto');
 
+    // Modal Edit Laporan
+    const modalEdit = document.getElementById('modal-edit-laporan');
+    const tombolEdit = document.getElementById('btn-edit-laporan');
+    const tombolTutup = document.getElementById('btn-tutup-modal-edit');
+    const tombolBatal = document.getElementById('btn-batal-edit');
+
+    function bukaModalEdit() {
+        if (!modalEdit) return;
+
+        modalEdit.classList.remove('hidden');
+        modalEdit.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function tutupModalEdit() {
+        if (!modalEdit) return;
+
+        modalEdit.classList.add('hidden');
+        modalEdit.classList.remove('flex');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    tombolEdit?.addEventListener('click', bukaModalEdit);
+    tombolTutup?.addEventListener('click', tutupModalEdit);
+    tombolBatal?.addEventListener('click', tutupModalEdit);
+
+    modalEdit?.addEventListener('click', event => {
+        if (event.target === modalEdit) {
+            tutupModalEdit();
+        }
+    });
+
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            tutupModalEdit();
+        }
+    });
+
+    // Validasi jumlah foto baru pada modal edit
+    const inputFotoEdit = document.getElementById('foto-edit');
+
+    inputFotoEdit?.addEventListener('change', function () {
+        const maksimalFotoBaru = Number(this.dataset.maxFotoBaru);
+
+        if (this.files.length > maksimalFotoBaru) {
+            alert(`Kamu hanya dapat menambahkan maksimal ${maksimalFotoBaru} foto lagi.`);
+            this.value = '';
+        }
+    });
+
     if (!inputFoto || !previewFoto || !areaUpload) return;
 
     let daftarFoto = [];
