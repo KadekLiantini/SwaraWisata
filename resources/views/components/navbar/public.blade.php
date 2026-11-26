@@ -18,8 +18,11 @@
     <div class="mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between gap-6 px-4 sm:px-8">
         <x-logo />
 
-        @if ($slot->isNotEmpty())
-            <nav class="hidden items-center gap-8 font-heading text-sm font-semibold text-muted md:flex [&_a:hover]:text-primary">
+        @if ($slot->isEmpty() && $akun?->isWisatawan())
+            <nav class="hidden md:flex">
+            </nav>
+        @elseif ($slot->isNotEmpty())
+            <nav class="hidden items-center gap-6 font-heading text-sm leading-5 font-semibold text-muted md:flex [&_a]:transition [&_a:hover]:text-primary">
                 {{ $slot }}
             </nav>
         @endif

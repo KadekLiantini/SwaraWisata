@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Wisatawan\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Wisatawan\LaporanController;
+use App\Http\Controllers\Wisatawan\ProfilController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -27,6 +28,9 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
     Route::get('/beranda', [DashboardController::class, 'index'])
     ->name('wisatawan.beranda');
 
+    Route::get('/profil', [ProfilController::class, 'show'])->name('wisatawan.profil');                              
+    Route::put('/profil/password', [ProfilController::class, 'updatePassword'])->name('wisatawan.password.update');   
+
     // laporan.create, laporan.store, pengajuan.*, komentar.* ...
     // Halaman pelaporan kerusakan destinasi
     Route::get('/destinasi/{destinasi}/laporan/create', [LaporanController::class, 'create'])
@@ -34,6 +38,7 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
     Route::post('/destinasi/{destinasi}/laporan', [LaporanController::class, 'store'])
         ->name('laporan.store');
     // Detail laporan milik wisatawan
+    Route::get('/laporan/{laporan}/edit', [LaporanController::class, 'edit'])->name('laporan.edit');   // BARU
     Route::get('/laporan/{laporan:id_laporan}', [LaporanController::class, 'show'])
         ->name('laporan.show');
     Route::put('/laporan/{laporan:id_laporan}', [LaporanController::class, 'update'])
