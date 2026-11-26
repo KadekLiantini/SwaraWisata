@@ -29,6 +29,40 @@ document.addEventListener('DOMContentLoaded', () => {
     tombolTutup?.addEventListener('click', tutupModalEdit);
     tombolBatal?.addEventListener('click', tutupModalEdit);
 
+    // Modal Perbesar Foto
+    const tombolPerbesarFoto = document.getElementById('btn-perbesar-foto');
+    const modalFoto = document.getElementById('modal-foto');
+    const gambarModal = document.getElementById('gambar-modal');
+    const tombolTutupFoto = document.getElementById('btn-tutup-foto');
+
+    function bukaFoto() {
+        if (!modalFoto || !gambarModal || !tombolPerbesarFoto) return;
+
+        gambarModal.src = tombolPerbesarFoto.dataset.fotoUrl;
+        modalFoto.classList.remove('hidden');
+        modalFoto.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function tutupFoto() {
+        if (!modalFoto || !gambarModal) return;
+
+        modalFoto.classList.add('hidden');
+        modalFoto.classList.remove('flex');
+        gambarModal.src = '';
+
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    tombolPerbesarFoto?.addEventListener('click', bukaFoto);
+    tombolTutupFoto?.addEventListener('click', tutupFoto);
+
+    modalFoto?.addEventListener('click', event => {
+        if (event.target === modalFoto) {
+            tutupFoto();
+        }
+    });
+
     modalEdit?.addEventListener('click', event => {
         if (event.target === modalEdit) {
             tutupModalEdit();
@@ -38,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
             tutupModalEdit();
+            tutupFoto();
         }
     });
 
@@ -174,6 +209,31 @@ document.addEventListener('DOMContentLoaded', () => {
         tambahkanFoto(event.dataTransfer.files);
     });
 });
+
+// Modal Perbesar Foto
+function bukaFoto(url) {
+    const modal = document.getElementById('modal-foto');
+    const gambar = document.getElementById('gambar-modal');
+
+    if (!modal || !gambar) return;
+
+    gambar.src = url;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+}
+
+function tutupFoto() {
+    const modal = document.getElementById('modal-foto');
+    const gambar = document.getElementById('gambar-modal');
+
+    if (!modal || !gambar) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    gambar.src = '';
+    document.body.classList.remove('overflow-hidden');
+}
 
 async function muatDaftarLaporan(url, simpanRiwayat = true) {
     const container = document.getElementById('daftar-laporan-container');
