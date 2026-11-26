@@ -69,16 +69,21 @@
 
         {{-- Pencarian destinasi: satu baris penuh --}}
         <section class="rounded-xl bg-white p-5 shadow-sm">
-            <form action="{{ route('wisatawan.beranda') }}" method="GET">
+            <form
+                action="{{ route('wisatawan.beranda') }}"
+                method="GET"
+                data-live-search
+                data-live-target="#hasil-destinasi"
+            >
                 <div id="pencarian-destinasi" class="scroll-mt-[120px] flex items-center gap-3 rounded-lg border border-soft-strong bg-[#DEE8FF] px-3">
                     <x-icon name="search" class="text-primary" />
                     <input
-                        type="text"
+                        type="search"
                         name="cari"
                         value="{{ request('cari') }}"
                         placeholder="Cari nama destinasi wisata, cagar budaya, atau pantai..."
                         class="w-full border-0 bg-transparent py-3 text-sm text-ink outline-none focus:ring-0"
-                    >
+                    />
                 </div>
 
                 {{-- Filter di bawah pencarian --}}
@@ -91,7 +96,6 @@
                         <select
                             name="kabupaten"
                             id="kabupaten"
-                            onchange="this.form.requestSubmit()"
                             class="w-full rounded-lg border-0 bg-soft px-3 py-3 text-sm text-ink focus:ring-1 focus:ring-primary"
                         >
                             <option value="">Semua Wilayah Terdaftar</option>
@@ -111,7 +115,6 @@
                         <select
                             name="kategori"
                             id="kategori"
-                            onchange="this.form.requestSubmit()"
                             class="w-full rounded-lg border-0 bg-soft px-3 py-3 text-sm text-ink focus:ring-1 focus:ring-primary"
                         >
                             <option value="">Semua Kategori</option>
@@ -132,76 +135,122 @@
 
             {{-- Kolom kiri: daftar destinasi --}}
             <section class="space-y-5 lg:col-span-2">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    @forelse ($destinasi as $item)
-                        <x-card padding="md" class="flex flex-col">    
-                            {{-- Foto destinasi dan badge kategori --}}
-                            <div class="relative">
-                                @if ($item->foto)
-                                    <img
-                                        src="{{ asset('storage/' . $item->foto) }}"
-                                        alt="{{ $item->nama }}"
-                                        class="h-36 w-full rounded-lg object-cover"
-                                    >
-                                @else
-                                    <div class="flex h-36 items-center justify-center rounded-lg bg-soft text-primary">
-                                        <x-icon name="landscape" size="44" />
-                                    </div>
-                                @endif
-
-                                <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-primary shadow-sm">
-                                    {{ $item->kategoriWisata?->nama ?? 'Destinasi Wisata' }}
-                                </span>
-                            </div>
-
-                            <div class="mt-3 flex flex-1 flex-col">
-                                <p class="mt-2 flex items-center gap-1 text-xs text-subtle">
-                                    <x-icon name="location_on" size="14" />
-                                    Kec. {{ $item->kecamatan?->nama ?? '-' }},
-                                    Kab. {{ $item->kecamatan?->kabupaten?->nama ?? '-' }}
-                                </p>
-
-                                <h3 class="mt-1 font-heading text-base font-bold text-ink">
-                                    {{ $item->nama }}
-                                </h3>
-
-                                <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
-                                    {{ $item->deskripsi ?: 'Belum ada deskripsi destinasi.' }}
-                                </p>
-
-                                <div class="mt-auto flex items-center justify-between gap-2 pt-4">
-                                    <span class="flex items-center gap-1 rounded-md bg-soft-strong px-2 py-1 text-xs font-semibold text-ink">
-                                        <x-icon name="warning" size="14" />
-                                        {{ $item->laporan_count }} Laporan Aktif
-                                    </span>
-
-                                    @if (Route::has('laporan.create'))
-                                        <a
-                                            href="{{ route('laporan.create', ['destinasi' => $item->id_destinasi]) }}"
-                                            class="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                <div id="hasil-destinasi">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        @forelse ($destinasi as $item)
+                            <x-card padding="md" class="flex flex-col">    
+                                {{-- Foto destinasi dan badge kategori --}}
+                                <div class="relative">
+                                    @if ($item->foto)
+                                        <img
+                                            src="{{ asset('storage/' . $item->foto) }}"
+                                            alt="{{ $item->nama }}"
+                                            class="h-36 w-full rounded-lg object-cover"
                                         >
-                                            Lihat & Lapor
-                                            <x-icon name="arrow_forward" size="15" />
-                                        </a>
+                                    @else
+                                        <div class="flex h-36 items-center justify-center rounded-lg bg-soft text-primary">
+                                            <x-icon name="landscape" size="44" />
+                                        </div>
                                     @endif
+
+                                    <span class="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-primary shadow-sm">
+                                        {{ $item->kategoriWisata?->nama ?? 'Destinasi Wisata' }}
+                                    </span>
                                 </div>
+
+                                <div class="mt-3 flex flex-1 flex-col">
+                                    <p class="mt-2 flex items-center gap-1 text-xs text-subtle">
+                                        <x-icon name="location_on" size="14" />
+                                        Kec. {{ $item->kecamatan?->nama ?? '-' }},
+                                        Kab. {{ $item->kecamatan?->kabupaten?->nama ?? '-' }}
+                                    </p>
+
+                                    <h3 class="mt-1 font-heading text-base font-bold text-ink">
+                                        {{ $item->nama }}
+                                    </h3>
+
+                                    <p class="mt-1 line-clamp-2 text-xs leading-5 text-muted">
+                                        {{ $item->deskripsi ?: 'Belum ada deskripsi destinasi.' }}
+                                    </p>
+
+                                    <div class="mt-auto flex items-center justify-between gap-2 pt-4">
+                                        <span class="flex items-center gap-1 rounded-md bg-soft-strong px-2 py-1 text-xs font-semibold text-ink">
+                                            <x-icon name="warning" size="14" />
+                                            {{ $item->laporan_count }} Laporan Aktif
+                                        </span>
+
+                                        @if (Route::has('laporan.create'))
+                                            <a
+                                                href="{{ route('laporan.create', ['destinasi' => $item->id_destinasi]) }}"
+                                                class="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                                            >
+                                                Lihat & Lapor
+                                                <x-icon name="arrow_forward" size="15" />
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </x-card>
+                        @empty
+                            <div class="rounded-xl border border-dashed border-line bg-white p-8 text-center sm:col-span-2">
+                                <x-icon name="search_off" size="40" class="mx-auto text-subtle" />
+                                <p class="mt-3 font-semibold text-ink">Destinasi tidak ditemukan</p>
+                                <p class="mt-1 text-sm text-muted">
+                                    Coba ubah kata kunci atau filter pencarian.
+                                </p>
                             </div>
-                        </x-card>
-                    @empty
-                        <div class="rounded-xl border border-dashed border-line bg-white p-8 text-center sm:col-span-2">
-                            <x-icon name="search_off" size="40" class="mx-auto text-subtle" />
-                            <p class="mt-3 font-semibold text-ink">Destinasi tidak ditemukan</p>
-                            <p class="mt-1 text-sm text-muted">
-                                Coba ubah kata kunci atau filter pencarian.
-                            </p>
-                        </div>
-                    @endforelse
-                </div>
+                        @endforelse
+                    </div>
+                    <div>
+                        {{-- Pagination --}}
+                        @if ($destinasi->hasPages())
+                            <div class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-black/5 bg-white px-6 py-4 shadow-sm">
 
-                <div>
-                    {{ $destinasi->links() }}
-                </div>
+                                <p class="text-sm text-text">
+                                    Menampilkan
+                                    <strong class="font-semibold text-ink">
+                                        {{ $destinasi->firstItem() }} - {{ $destinasi->lastItem() }}
+                                    </strong>
+                                    dari
+                                    <strong class="font-semibold text-ink">{{ $destinasi->total() }}</strong>
+                                    destinasi
+                                </p>
 
+                                <nav class="flex items-center gap-2" aria-label="Halaman">
+                                    @if ($destinasi->onFirstPage())
+                                        <span class="grid size-10 place-items-center rounded-lg bg-soft text-ink opacity-40">&lsaquo;</span>
+                                    @else
+                                        <a href="{{ $destinasi->previousPageUrl() }}"
+                                            data-live-link
+                                            class="grid size-10 place-items-center rounded-lg bg-soft text-ink transition hover:bg-[#dee8ff]">&lsaquo;</a>
+                                    @endif
+
+                                    @foreach ($destinasi->getUrlRange(1, $destinasi->lastPage()) as $page => $url)
+                                        @if ($page == $destinasi->currentPage())
+                                            <span class="grid size-10 place-items-center rounded-lg bg-[#005f49] text-sm font-semibold text-white">
+                                                {{ $page }}
+                                            </span>
+                                        @else
+                                            <a href="{{ $url }}"
+                                                data-live-link
+                                                class="grid size-10 place-items-center rounded-lg bg-soft text-sm font-semibold text-ink transition hover:bg-[#dee8ff]">
+                                                {{ $page }}
+                                            </a>
+                                        @endif
+                                    @endforeach
+
+                                    @if ($destinasi->hasMorePages())
+                                        <a href="{{ $destinasi->nextPageUrl() }}"
+                                            data-live-link
+                                            class="grid size-10 place-items-center rounded-lg bg-soft text-ink transition hover:bg-[#dee8ff]">&rsaquo;</a>
+                                    @else
+                                        <span class="grid size-10 place-items-center rounded-lg bg-soft text-ink opacity-40">&rsaquo;</span>
+                                    @endif
+                                </nav>
+                            </div>
+                        @endif
+                    </div>
+                </div>
                 {{-- Pengajuan destinasi baru: di bawah card destinasi --}}
                 <section class="flex flex-col items-start gap-5 rounded-xl bg-primary p-6 text-white sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-start gap-3">
