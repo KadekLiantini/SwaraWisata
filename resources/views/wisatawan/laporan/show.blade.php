@@ -26,7 +26,7 @@
                 </div>
 
                 <a href="{{ route('laporan.create', $laporan->id_destinasi) }}"
-                    class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#e7eeff] px-[14px] py-2 text-xs font-semibold leading-4 text-[#111c2d] transition-colors hover:bg-[#dee8ff]">
+                    class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#e7eeff] px-[14px] py-2 text-xs font-semibold leading-4 text-[#111c2d] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90">
                     <x-icon name="arrow_back" size="16" />
                     Kembali ke Detail Destinasi
                 </a>
@@ -110,7 +110,8 @@
 
                                     <button
                                         type="button"
-                                        onclick="window.open('{{ $laporan->foto->first()->url }}', '_blank')"
+                                        id="btn-perbesar-foto"
+                                        data-foto-url="{{ $laporan->foto->first()->url }}"
                                         class="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm transition hover:bg-white/90"
                                     >
                                         <x-icon name="zoom_in" size="14" />
@@ -120,7 +121,7 @@
 
                                 {{-- Foto lainnya --}}
                                 <div class="grid min-h-0 grid-rows-{{ min($laporan->foto->count() - 1, 2) }} gap-2.5">
-                                    @foreach ($laporan->foto->skip(1) as $index => $foto)
+                                    @foreach ($laporan->foto->skip(1)->values() as $index => $foto)
                                         <div class="relative min-h-0 overflow-hidden rounded-xl">
                                             <img
                                                 src="{{ $foto->url }}"
@@ -254,7 +255,7 @@
                                 id="btn-edit-laporan"
                                 type="button"
                                 @disabled(!($laporanSaya && $bolehDiubah))
-                                class="inline-flex items-center gap-1.5 rounded-lg bg-[#005F49] px-3.5 py-2.5 text-sm font-medium text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:text-[#8d99ac]"
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90 disabled:cursor-not-allowed disabled:text-[#8d99ac]"
                             >
                                 @if ($laporanSaya && $bolehDiubah)
                                     <x-icon name="edit" size="17" />
@@ -275,7 +276,7 @@
                                 <button
                                     type="submit"
                                     @disabled(!($laporanSaya && $bolehDiubah))
-                                    class="inline-flex items-center gap-1.5 rounded-lg bg-[#BA1A1A] px-3.5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90 disabled:cursor-not-allowed disabled:text-[#8d99ac] disabled:hover:translate-y-0 disabled:hover:brightness-100"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-danger px-3.5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90 disabled:cursor-not-allowed disabled:text-[#8d99ac] disabled:hover:translate-y-0 disabled:hover:brightness-100"
                                 >
                                     @if ($laporanSaya && $bolehDiubah)
                                         <x-icon name="delete" size="17" />
@@ -567,14 +568,23 @@
 
             {{-- Laporan Terkait Lainnya --}}
             <section class="mt-10">
-                <div class="mb-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-[#008568]">
-                        Pantau Area Sekitar
-                    </p>
+                <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-[#008568]">
+                            Pantau Area Sekitar
+                        </p>
 
-                    <h2 class="mt-1 font-heading text-xl font-bold text-[#111c2d]">
-                        Laporan Terkait Lainnya di {{ $laporan->destinasi->nama }}
-                    </h2>
+                        <h2 class="mt-1 font-heading text-xl font-bold text-[#111c2d]">
+                            Laporan Terkait Lainnya di {{ $laporan->destinasi->nama }}
+                        </h2>
+                    </div>
+
+                    <a
+                        href="{{ route('laporan.create', $laporan->id_destinasi) }}"
+                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-[#008568] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-95"
+                    >
+                        Lihat semua {{ $laporan->destinasi->laporan()->count() }} aduan di destinasi ini →
+                    </a>
                 </div>
 
                 @if ($laporanLain->isNotEmpty())
@@ -605,7 +615,7 @@
 
                                     <a
                                         href="{{ route('laporan.show', $item) }}"
-                                        class="inline-flex items-center gap-1 text-sm font-semibold text-[#008568] transition hover:gap-2"
+                                        class="inline-flex items-center gap-1 text-sm font-semibold text-[#008568] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-90"
                                     >
                                         Buka Detail
                                         <x-icon name="arrow_forward" size="16" />
@@ -783,5 +793,26 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    {{-- Modal Perbesar Foto --}}
+    <div
+        id="modal-foto"
+        class="fixed inset-0 z-[110] hidden items-center justify-center bg-black/85 p-4"
+    >
+        <button
+            type="button"
+            id="btn-tutup-foto"
+            class="absolute right-5 top-5 flex size-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+        >
+            <x-icon name="close" size="24" />
+        </button>
+
+        <img
+            id="gambar-modal"
+            src=""
+            alt="Foto laporan diperbesar"
+            class="max-h-[90vh] max-w-full rounded-xl object-contain shadow-2xl"
+        />
     </div>
 </x-layouts.public>
