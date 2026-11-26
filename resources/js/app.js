@@ -2,6 +2,7 @@ import "./laporan.js";
 import "./live-search";
 import "./modal-edit-laporan";
 import "./admin-destinasi.js";
+import "./pengajuan-destinasi.js";
 
 /*
  | Interaksi kecil untuk komponen form SwaraWisata.
