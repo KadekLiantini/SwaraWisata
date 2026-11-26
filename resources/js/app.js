@@ -1,4 +1,6 @@
-import './laporan.js';
+import "./laporan.js";
+import "./live-search";
+import "./modal-edit-laporan";
 
 /*
  | Interaksi kecil untuk komponen form SwaraWisata.
@@ -26,17 +28,6 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Penghitung karakter: <span data-counter-for="id-input">0/20</span>
-    document.querySelectorAll("[data-counter-for]").forEach((counter) => {
-        const input = document.getElementById(counter.dataset.counterFor);
-        if (!input) return;
-
-        const update = () => {
-            counter.textContent = `${input.value.length}/${input.maxLength}`;
-        };
-        input.addEventListener("input", update);
-        update();
-    });
 
     // Cek kecocokan: <input data-match="password"> (dipakai konfirmasi password)
     document.querySelectorAll("[data-match]").forEach((input) => {
@@ -74,4 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
         input.addEventListener("input", update);
         target.addEventListener("input", update);
     });
+});
+
+// Penghitung karakter: <span data-counter-for="id-input">0/20</span>
+// Memakai delegasi event, jadi juga bekerja untuk form yang dimuat belakangan (modal edit)
+document.addEventListener('input', (event) => {
+    const input = event.target;
+    if (!input.id) return;
+
+    const counter = document.querySelector(`[data-counter-for="${input.id}"]`);
+    if (counter) counter.textContent = `${input.value.length}/${input.maxLength}`;
 });

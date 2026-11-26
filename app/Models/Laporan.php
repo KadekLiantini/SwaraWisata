@@ -53,4 +53,16 @@ class Laporan extends Model
     {
         return $this->id_akun === $akun->id_akun;
     }
+
+    /** ID laporan untuk ditampilkan, contoh: #16 */
+    public function getKodeAttribute(): string
+    {
+        return '#'.$this->id_laporan;
+    }
+
+    /** Laporan hanya boleh diedit/dihapus sebelum pengelola menindaklanjuti (aturan no. 15 & 17) */
+    public function bisaDiubah(): bool
+    {
+        return in_array($this->status, [self::STATUS_BELUM_DILIHAT, self::STATUS_DILIHAT], true);
+    }
 }

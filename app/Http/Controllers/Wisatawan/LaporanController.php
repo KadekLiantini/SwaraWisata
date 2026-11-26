@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Akun;
 use App\Models\RiwayatPenanganan;
+use Illuminate\Support\Str;
 
 class LaporanController extends Controller
 {
@@ -266,6 +267,35 @@ class LaporanController extends Controller
             ->with('success', 'Laporan berhasil dikirim.');
     }
 
+        /** Mengirim modal edit laporan (dipakai halaman profil lewat JavaScript) */
+    public function edit(Request $request, Laporan $laporan)
+    {
+        if (! $laporan->milik($request->user())) {
+            abort(403, 'Kamu tidak memiliki akses untuk mengubah laporan ini.');
+        }
+
+        if (! $laporan->bisaDiubah()) {
+            abort_if($request->ajax(), 409);
+
+            return redirect()
+                ->route('laporan.show', $laporan->id_laporan)
+                ->with('error', 'Laporan tidak dapat diubah karena sudah ditindaklanjuti.');
+        }
+
+        // Dibuka langsung tanpa JavaScript: arahkan ke halaman detail
+        if (! $request->ajax()) {
+            return redirect()->route('laporan.show', $laporan->id_laporan);
+        }
+
+        $laporan->load(['foto', 'destinasi']);
+
+        return view('wisatawan.laporan.partials.modal-edit', [
+            'laporan'           => $laporan,
+            'kategoriKerusakan' => KategoriKerusakan::orderBy('nama')->get(),
+            'kembaliKe'         => url()->previous(),
+        ]);
+    }
+
     public function update(Request $request, Laporan $laporan)
     {
         // Pastikan laporan merupakan milik wisatawan yang sedang login
@@ -273,13 +303,19 @@ class LaporanController extends Controller
             abort(403, 'Kamu tidak memiliki akses untuk mengubah laporan ini.');
         }
 
+        // BARU: halaman tujuan setelah simpan (profil atau detail), hanya jika masih di website ini
+        $kembali = (string) $request->input('kembali');
+        $tujuan = Str::startsWith($kembali, url('/'))
+            ? $kembali
+            : route('laporan.show', $laporan->id_laporan);
+
         // Pastikan status laporan masih memungkinkan untuk diedit
         if (!in_array($laporan->status, [
             Laporan::STATUS_BELUM_DILIHAT,
             Laporan::STATUS_DILIHAT,
         ], true)) {
             return redirect()
-                ->route('laporan.show', $laporan->id_laporan)
+                ->to($tujuan) // DIUBAH
                 ->with('error', 'Laporan tidak dapat diubah karena sudah ditindaklanjuti.');
         }
 
@@ -373,16 +409,20 @@ class LaporanController extends Controller
         }
 
         return redirect()
-            ->route('laporan.show', $laporan->id_laporan)
+            ->to($tujuan)
             ->with('success', 'Laporan berhasil diperbarui.');
     }
 
-    public function destroy(Laporan $laporan)
+    public function destroy(Request $request, Laporan $laporan) // DIUBAH: tambah Request $request
     {
         // Pastikan laporan merupakan milik wisatawan yang sedang login
         if (!$laporan->milik(auth()->user())) {
             abort(403, 'Kamu tidak memiliki akses untuk menghapus laporan ini.');
         }
+
+        // BARU: alamat asal (misalnya profil), hanya jika masih di website ini
+        $kembali = (string) $request->input('kembali');
+        $dariHalamanLain = Str::startsWith($kembali, url('/'));
 
         // Pastikan status laporan masih memungkinkan untuk dihapus
         if (!in_array($laporan->status, [
@@ -390,7 +430,7 @@ class LaporanController extends Controller
             Laporan::STATUS_DILIHAT,
         ], true)) {
             return redirect()
-                ->route('laporan.show', $laporan->id_laporan)
+                ->to($dariHalamanLain ? $kembali : route('laporan.show', $laporan->id_laporan)) // DIUBAH
                 ->with('error', 'Laporan tidak dapat dihapus karena sudah ditindaklanjuti.');
         }
 
@@ -400,7 +440,7 @@ class LaporanController extends Controller
         $laporan->delete();
 
         return redirect()
-            ->route('laporan.create', $idDestinasi)
+            ->to($dariHalamanLain ? $kembali : route('laporan.create', $idDestinasi)) // DIUBAH
             ->with('success', 'Laporan berhasil dihapus.');
     }
 }
