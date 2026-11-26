@@ -9,6 +9,7 @@ use App\Http\Controllers\Wisatawan\LaporanController;
 use App\Http\Controllers\Wisatawan\ProfilController;
 use App\Http\Controllers\Admin\DestinasiController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
+use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -48,6 +49,15 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
     // Hapus laporan milik wisatawan
     Route::delete('/laporan/{laporan:id_laporan}', [LaporanController::class, 'destroy'])
         ->name('laporan.destroy');
+    // Pengajuan destinasi wisata baru
+    Route::get('/pengajuan-destinasi', [PengajuanDestinasiController::class, 'create'])
+        ->name('pengajuan.create');
+
+    Route::get('/pengajuan-destinasi/kecamatan/{idKabupaten}', [PengajuanDestinasiController::class, 'getKecamatan'])
+        ->name('pengajuan.kecamatan');
+
+    Route::post('/pengajuan-destinasi', [PengajuanDestinasiController::class, 'store'])
+        ->name('pengajuan.store');
 });
 
 // Pengelola
