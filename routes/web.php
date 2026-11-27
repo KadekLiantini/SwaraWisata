@@ -7,6 +7,7 @@ use App\Http\Controllers\Wisatawan\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Wisatawan\LaporanController;
 use App\Http\Controllers\Wisatawan\ProfilController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DestinasiController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
@@ -110,7 +111,12 @@ Route::middleware(['auth', 'role:pengelola'])
 
 // Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::view('/dashboard', 'admin.dashboard')->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Placeholder navigasi dashboard; arahkan ke halaman sebenarnya saat tersedia.
+    Route::get('/pengajuan', fn () => redirect()->route('admin.dashboard'))->name('pengajuan.index');
+    Route::get('/pengajuan/{pengajuan}', fn () => redirect()->route('admin.dashboard'))->name('pengajuan.show');
+    Route::get('/pengelola/terbitkan', fn () => redirect()->route('admin.dashboard'))->name('pengelola.terbitkan');
 
     Route::get('/destinasi', [DestinasiController::class, 'index'])->name('destinasi.index');
     Route::get('/destinasi/create', [DestinasiController::class, 'create'])->name('destinasi.create');
