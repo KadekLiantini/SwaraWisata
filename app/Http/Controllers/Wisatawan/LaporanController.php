@@ -27,8 +27,10 @@ class LaporanController extends Controller
             'kategoriWisata',
         ]);
 
-        $kategoriKerusakan = KategoriKerusakan::orderByRaw("
-            CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")->orderBy('nama')->get();
+        $kategoriKerusakan = KategoriKerusakan::active()
+            ->orderByRaw("CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('nama')
+            ->get();
 
         // Mengambil seluruh laporan pada destinasi ini
         $laporanDasar = Laporan::where('id_destinasi', $destinasi->id_destinasi);
@@ -152,8 +154,11 @@ class LaporanController extends Controller
             'riwayat.komentar.balasan.penulis',
         ]);
 
-        $kategoriKerusakan = KategoriKerusakan::orderByRaw("
-            CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")->orderBy('nama')->get();
+        $kategoriKerusakan = KategoriKerusakan::where('is_active', true)
+            ->orWhere('id_kategori_kerusakan', $laporan->id_kategori_kerusakan)
+            ->orderByRaw("CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")
+            ->orderBy('nama')
+            ->get();
 
         $riwayatTerakhir = $laporan->riwayat->last();
 
@@ -248,7 +253,11 @@ class LaporanController extends Controller
                     fn ($query) => $query->where('is_active', true)
                 ),
             ],
-            'id_kategori_kerusakan' => ['required', 'exists:kategori_kerusakan,id_kategori_kerusakan'],
+            'id_kategori_kerusakan' => [
+                'required',
+                Rule::exists('kategori_kerusakan', 'id_kategori_kerusakan')
+                    ->where(fn ($query) => $query->where('is_active', true)),
+            ],
             'judul' => ['required', 'string', 'max:150'],
             'lokasi_spesifik' => ['required', 'string', 'max:255'],
             'deskripsi' => ['required', 'string', 'max:1000'],
@@ -306,7 +315,11 @@ class LaporanController extends Controller
 
         return view('wisatawan.laporan.partials.modal-edit', [
             'laporan'           => $laporan,
-            'kategoriKerusakan' => KategoriKerusakan::orderBy('nama')->get(),
+            'kategoriKerusakan' => KategoriKerusakan::where('is_active', true)
+                ->orWhere('id_kategori_kerusakan', $laporan->id_kategori_kerusakan)
+                ->orderByRaw("CASE WHEN nama = 'Lainnya' THEN 1 ELSE 0 END")
+                ->orderBy('nama')
+                ->get(),
             'kembaliKe'         => url()->previous(),
         ]);
     }
@@ -337,7 +350,14 @@ class LaporanController extends Controller
         $validated = $request->validate([
             'id_kategori_kerusakan' => [
                 'required',
-                'exists:kategori_kerusakan,id_kategori_kerusakan',
+                Rule::exists('kategori_kerusakan', 'id_kategori_kerusakan')
+                    ->where(function ($query) use ($laporan) {
+                        $query->where('is_active', true)
+                            ->orWhere(
+                                'id_kategori_kerusakan',
+                                $laporan->id_kategori_kerusakan
+                            );
+                    }),
             ],
             'judul' => ['required', 'string', 'max:150'],
             'lokasi_spesifik' => ['required', 'string', 'max:255'],

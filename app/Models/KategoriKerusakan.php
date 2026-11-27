@@ -11,8 +11,22 @@ class KategoriKerusakan extends Model
     protected $table = 'kategori_kerusakan';
     protected $primaryKey = 'id_kategori_kerusakan';
     protected $fillable = ['nama', 'deskripsi'];
+    protected $casts = ['is_active' => 'boolean'];
 
-    public function laporan() { return $this->hasMany(Laporan::class, 'id_kategori_kerusakan', 'id_kategori_kerusakan'); }
+    public function laporan()
+    {
+        return $this->hasMany(Laporan::class, 'id_kategori_kerusakan', 'id_kategori_kerusakan');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
+    }
 
         /** Nama ikon Material Symbols sesuai jenis kerusakan (dipakai kartu laporan) */
     public function icon(): string
