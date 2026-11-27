@@ -9,6 +9,7 @@ use App\Http\Controllers\Wisatawan\LaporanController;
 use App\Http\Controllers\Wisatawan\ProfilController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DestinasiController;
+use App\Http\Controllers\Admin\KategoriPelaporanController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
 use App\Http\Controllers\PasswordController;                                      
@@ -124,4 +125,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/destinasi/{id_destinasi}/edit', [DestinasiController::class, 'edit'])->name('destinasi.edit');
     Route::put('/destinasi/{id_destinasi}', [DestinasiController::class, 'update'])->name('destinasi.update');
     Route::patch('/destinasi/{id_destinasi}/status', [DestinasiController::class, 'updateStatus'])->name('destinasi.status');
+
+    // Kategori Pelaporan
+    Route::get('/kategori-pelaporan', [KategoriPelaporanController::class, 'index'])
+        ->name('kategori.index');
+
+    Route::get('/kategori-pelaporan/create', [KategoriPelaporanController::class, 'create'])
+        ->name('kategori.create');
+
+    Route::post('/kategori-pelaporan', [KategoriPelaporanController::class, 'store'])
+        ->name('kategori.store');
+
+    Route::get('/kategori-pelaporan/{id_kategori_kerusakan}/edit', [KategoriPelaporanController::class, 'edit'])
+        ->name('kategori.edit');
+
+    Route::put('/kategori-pelaporan/{id_kategori_kerusakan}', [KategoriPelaporanController::class, 'update'])
+        ->name('kategori.update');
+
+    Route::patch('/kategori-pelaporan/{id_kategori_kerusakan}/status', [KategoriPelaporanController::class, 'updateStatus'])
+        ->name('kategori.status');
 });
