@@ -9,6 +9,7 @@ use App\Models\FotoRiwayat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Models\KategoriKerusakan;
 
 class PengelolaLaporanController extends Controller
 {
@@ -19,62 +20,129 @@ class PengelolaLaporanController extends Controller
             404
         );
     }
-    public function index(Request $request)
+    
+public function index(Request $request)
 {
+    $pengelola = auth()->user();
+    $idDestinasi = $pengelola->id_destinasi;
+
+    // Filter status
     $filter = $request->query('filter', 'semua');
 
+    if (!in_array($filter, [
+        'semua',
+        'dilihat',
+        'ditindaklanjuti',
+        'selesai',
+    ], true)) {
+        $filter = 'semua';
+    }
+
+    // Pencarian
+    $search = trim($request->query('search', ''));
+
+    // Filter kategori
+    $kategori = $request->query('kategori', '');
+
+    // Pengurutan
+    $sort = $request->query('sort', 'terbaru');
+
+    if (!in_array($sort, ['terbaru', 'terlama'], true)) {
+        $sort = 'terbaru';
+    }
+
+    // Query dasar laporan milik destinasi pengelola
+    $laporanDasar = Laporan::query()
+        ->where('id_destinasi', $idDestinasi ?: 0);
+
+    // Hitung ringkasan status
+    $perluDitinjau = (clone $laporanDasar)
+        ->where('status', Laporan::STATUS_BELUM_DILIHAT)
+        ->count();
+
+    $dalamPeninjauan = (clone $laporanDasar)
+        ->where('status', Laporan::STATUS_DILIHAT)
+        ->count();
+
+    $sedangDiperbaiki = (clone $laporanDasar)
+        ->where('status', Laporan::STATUS_DITINDAKLANJUTI)
+        ->count();
+
+    $selesaiDiverifikasi = (clone $laporanDasar)
+        ->where('status', Laporan::STATUS_SELESAI)
+        ->count();
+
+    // Ambil laporan beserta relasinya
     $query = Laporan::with([
         'pelapor',
         'destinasi',
         'kategoriKerusakan',
         'foto',
-    ]);
+    ])->where('id_destinasi', $idDestinasi ?: 0);
 
-    // Batasi laporan hanya untuk destinasi pengelola yang login
-    $idDestinasi = auth()->user()->id_destinasi;
-
-    if ($idDestinasi) {
-        $query->where('id_destinasi', $idDestinasi);
-    } else {
-        $query->whereRaw('1 = 0');
-    }
-
-    // Filter berdasarkan status laporan
-    if ($filter === 'perlu_penanganan') {
-        $query->whereIn('status', [
-            Laporan::STATUS_BELUM_DILIHAT,
-            Laporan::STATUS_DILIHAT,
-            Laporan::STATUS_DITINDAKLANJUTI,
-        ]);
-    } elseif ($filter === 'belum_dilihat') {
-    $query->where(
-        'status',
-        Laporan::STATUS_BELUM_DILIHAT
-    );
+    // Filter status
+    if ($filter === 'dilihat') {
+        $query->where('status', Laporan::STATUS_DILIHAT);
     } elseif ($filter === 'ditindaklanjuti') {
-        $query->where(
-            'status',
-            Laporan::STATUS_DITINDAKLANJUTI
-        );
-    } elseif ($filter === 'belum_ditindaklanjuti') {
-        $query->whereIn('status', [
-            Laporan::STATUS_BELUM_DILIHAT,
-            Laporan::STATUS_DILIHAT,
-        ]);
-    } else {
-        $filter = 'semua';
+        $query->where('status', Laporan::STATUS_DITINDAKLANJUTI);
+    } elseif ($filter === 'selesai') {
+        $query->where('status', Laporan::STATUS_SELESAI);
     }
 
-    $laporan = $query
-        ->latest()
-        ->paginate(10)
-        ->withQueryString();
+    // Pencarian judul, ID, atau username pelapor
+    if ($search !== '') {
+        $idSearch = ltrim($search, '#');
 
-    return view('pengelola.laporan.index', compact(
+        $query->where(function ($q) use ($search, $idSearch) {
+            $q->where('judul', 'like', "%{$search}%")
+                ->orWhereHas('pelapor', function ($pelaporQuery) use ($search) {
+                    $pelaporQuery->where(
+                        'username',
+                        'like',
+                        "%{$search}%"
+                    );
+                });
+
+            if ($idSearch !== '' && ctype_digit($idSearch)) {
+                $q->orWhere('id_laporan', (int) $idSearch);
+            }
+        });
+    }
+
+    // Filter kategori
+    if ($kategori !== '') {
+        $query->where('id_kategori_kerusakan', $kategori);
+    }
+
+    // Pengurutan laporan
+    $query->orderBy(
+        'created_at',
+        $sort === 'terbaru' ? 'desc' : 'asc'
+    );
+
+    // Pagination: 6 laporan per halaman
+    $laporan = $query->paginate(6)->withQueryString();
+
+    // Daftar kategori untuk dropdown
+    $daftarKategori = KategoriKerusakan::query()
+    ->orderByRaw("CASE WHEN LOWER(nama) = 'lainnya' THEN 1 ELSE 0 END")
+    ->orderBy('nama')
+    ->get();
+
+    return view('pengelola.laporan.daftar', compact(
         'laporan',
-        'filter'
+        'filter',
+        'search',
+        'kategori',
+        'sort',
+        'daftarKategori',
+        'perluDitinjau',
+        'dalamPeninjauan',
+        'sedangDiperbaiki',
+        'selesaiDiverifikasi'
     ));
 }
+
     private function pastikanMilikPengelola(
         Laporan $laporan,
         RiwayatPenanganan $riwayat
