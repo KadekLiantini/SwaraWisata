@@ -294,7 +294,7 @@
         @endphp
 
         {{-- Header panel --}}
-        <div class="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+        <div class="flex flex-col justify-between gap-2 lg:flex-row lg:items-start">
             <div>
                 <h3 class="font-heading text-lg font-bold text-ink">
                     Laporan Terbaru yang Perlu Ditangani
@@ -314,49 +314,85 @@
             </a>
         </div>
 
-        {{-- Filter dan informasi jumlah laporan --}}
-<div class="mt-5 flex flex-wrap items-center justify-start gap-4">
-
-    {{-- Filter semua laporan yang perlu penanganan --}}
-<a
-    href="{{ route('pengelola.dashboard', ['filter' => 'perlu_penanganan']) }}"
-    class="inline-flex items-center gap-2 rounded-lg border border-primary bg-soft px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10"
+        
+{{-- Filter pencarian, status, dan pengurutan --}}
+<form
+    id="filter-laporan"
+    action="{{ route('pengelola.dashboard') }}"
+    method="GET"
+    class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
 >
-    <x-icon name="filter_list" class="h-4 w-4" />
-    Semua Perlu Penanganan
-    <span class="rounded-full bg-primary px-2 py-0.5 text-xs text-white">
-        {{ $jumlahPerluDitangani }}
-    </span>
-</a>
+    {{-- Pencarian judul atau ID laporan --}}
+    <div class="relative w-full sm:max-w-[360px]">
+        <x-icon
+            name="search"
+            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+        />
 
-{{-- Filter berdasarkan status laporan --}}
-<div class="flex flex-wrap items-center gap-3">
+        <input
+            id="search-laporan"
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Cari judul atau ID laporan (#16)..."
+            class="w-full rounded-xl border border-transparent bg-[#F0F3FF] py-2 pl-9 pr-3 text-sm text-ink placeholder:text-muted focus:border-primary/90 focus:outline-none focus:ring-1 focus:ring-primary/90"
+        />
+    </div>
 
-    {{-- Belum Dilihat --}}
-    <a
-        href="{{ route('pengelola.dashboard', ['filter' => 'belum_dilihat']) }}"
-        class="inline-flex items-center gap-2 rounded-lg bg-danger-soft px-3 py-2 text-xs font-semibold text-danger transition hover:opacity-80"
-    >
-        <span class="h-2 w-2 rounded-full bg-danger"></span>
-        Belum Dilihat
-        <span>{{ $belumDilihat }}</span>
-    </a>
+    {{-- Dropdown filter --}}
+    <div class="flex flex-wrap items-center gap-2">
 
-    {{-- Ditindaklanjuti --}}
-    <a
-        href="{{ route('pengelola.dashboard', ['filter' => 'ditindaklanjuti']) }}"
-        class="inline-flex items-center gap-2 rounded-lg bg-secondary/20 px-3 py-2 text-xs font-semibold text-secondary-ink transition hover:opacity-80"
-    >
-        <span class="h-2 w-2 rounded-full bg-secondary"></span>
-        Ditindaklanjuti
-        <span>{{ $ditindaklanjuti }}</span>
-    </a>
+        {{-- Filter status --}}
+        <div class="relative min-w-[155px]">
+            <select
+                name="status"
+                onchange="this.form.submit()"
+                class="w-full appearance-none rounded-xl border border-transparent bg-[#F0F3FF] px-3 py-2 pr-9 text-sm font-medium text-ink focus:border-primary/90 focus:outline-none focus:ring-1 focus:ring-primary/90"
+            >
+                <option value="">Semua Status</option>
+                <option value="dilihat" @selected(request('status') === 'dilihat')>
+                    Dilihat
+                </option>
+                <option value="ditindaklanjuti" @selected(request('status') === 'ditindaklanjuti')>
+                    Ditindaklanjuti
+                </option>
+                <option value="selesai" @selected(request('status') === 'selesai')>
+                    Selesai
+                </option>
+            </select>
 
-</div>
-</div>
+            <x-icon
+                name="keyboard_arrow_down"
+                class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            />
+        </div>
+
+        {{-- Pengurutan laporan --}}
+        <div class="relative min-w-[115px]">
+            <select
+                name="sort"
+                onchange="this.form.submit()"
+                class="w-full appearance-none rounded-xl border border-transparent bg-[#F0F3FF] px-3 py-2 pr-9 text-sm font-medium text-ink focus:border-primary/90 focus:outline-none focus:ring-1 focus:ring-primary/90"
+            >
+                <option value="terbaru" @selected(request('sort', 'terbaru') === 'terbaru')>
+                    Terbaru
+                </option>
+                <option value="terlama" @selected(request('sort') === 'terlama')>
+                    Terlama
+                </option>
+            </select>
+
+            <x-icon
+                name="sort"
+                class="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            />
+        </div>
+
+    </div>
+</form>
 
         {{-- Tabel laporan --}}
-        <div class="mt-5 w-full overflow-x-auto">
+        <div class="mt-3 w-full overflow-x-auto">
             <table class="w-full min-w-[1328px] text-left">
                 <thead>
                     <tr class="border-b border-line bg-soft/50 text-[11px] uppercase tracking-wide text-muted">
@@ -381,7 +417,7 @@
                                 ],
                                 'dilihat' => [
                                     'label' => 'Dilihat',
-                                    'class' => 'bg-soft text-primary',
+                                    'class' => 'bg-primary/20 text-primary',
                                     'dot' => 'bg-primary',
                                 ],
                                 'ditindaklanjuti' => [
@@ -503,38 +539,13 @@
                             {{-- Aksi tindak lanjut --}}
                             <td class="whitespace-nowrap px-3 py-4">
                                 <div class="flex justify-end">
-
-                                    @if (in_array($item->status, [
-                                        \App\Models\Laporan::STATUS_BELUM_DILIHAT,
-                                        \App\Models\Laporan::STATUS_DILIHAT
-                                    ]))
-                                        <a
-                                            href="{{ route('pengelola.laporan.show', $item->id_laporan) }}"
-                                            class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-primary-hover"
-                                        >
-                                            Lihat Detail & Tangani
-                                            <x-icon name="arrow_forward" class="h-4 w-4" />
-                                        </a>
-
-                                    @elseif ($item->status === \App\Models\Laporan::STATUS_DITINDAKLANJUTI)
-                                        <a
-                                            href="{{ route('pengelola.laporan.show', $item->id_laporan) }}#form-tindak-lanjut"
-                                            class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-primary-hover"
-                                        >
-                                            <x-icon name="edit" class="h-4 w-4" />
-                                            Kelola Status
-                                        </a>
-
-                                    @elseif ($item->status === \App\Models\Laporan::STATUS_SELESAI)
-                                        <a
-                                            href="{{ route('pengelola.laporan.show', $item->id_laporan) }}#form-penyelesaian"
-                                            class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:bg-primary-hover"
-                                        >
-                                            <x-icon name="add_a_photo" class="h-4 w-4" />
-                                            Update Bukti Selesai
-                                        </a>
-                                    @endif
-
+                                    <a
+                                        href="{{ route('pengelola.laporan.show', $item->id_laporan) }}"
+                                        class="inline-flex items-center gap-2 rounded-lg bg-soft px-3 py-2 text-xs font-semibold text-muted transition hover:bg-muted/10"
+                                    >
+                                        Lihat Detail & Tangani
+                                        <x-icon name="arrow_forward" class="h-4 w-4" />
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -561,3 +572,21 @@
 
     </div>
 </x-layouts.pengelola>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('filter-laporan');
+        const search = document.getElementById('search-laporan');
+
+        if (!form || !search) return;
+
+        let timeout = null;
+
+        search.addEventListener('input', function () {
+            clearTimeout(timeout);
+
+            timeout = setTimeout(function () {
+                form.requestSubmit();
+            }, 400);
+        });
+    });
+</script>

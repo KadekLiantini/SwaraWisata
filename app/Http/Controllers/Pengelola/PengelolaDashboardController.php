@@ -15,17 +15,31 @@ class PengelolaDashboardController extends Controller
         $pengelola = auth()->user();
         $idDestinasi = $pengelola->id_destinasi;
 
-        // Tentukan filter yang sedang dipilih.
-        $filter = $request->query('filter', 'perlu_penanganan');
+        // Ambil nilai filter dari URL.
+        $search = $request->query('search', '');
+        $search = is_string($search) ? trim($search) : '';
 
-        // Batasi pilihan filter yang diperbolehkan.
-        if (!in_array($filter, [
-            'semua',
-            'perlu_penanganan',
-            'belum_dilihat',
-            'ditindaklanjuti',
-        ])) {
-            $filter = 'perlu_penanganan';
+        $status = $request->query('status', '');
+        $status = is_string($status) ? $status : '';
+
+        $sort = $request->query('sort', 'terbaru');
+        $sort = is_string($sort) ? $sort : 'terbaru';
+
+        // Batasi pilihan status yang diperbolehkan.
+        $statusValid = [
+            '',
+            Laporan::STATUS_DILIHAT,
+            Laporan::STATUS_DITINDAKLANJUTI,
+            Laporan::STATUS_SELESAI,
+        ];
+
+        if (!in_array($status, $statusValid, true)) {
+            $status = '';
+        }
+
+        // Batasi pilihan pengurutan.
+        if (!in_array($sort, ['terbaru', 'terlama'], true)) {
+            $sort = 'terbaru';
         }
 
         // Jika pengelola belum memiliki destinasi, tampilkan data kosong.
@@ -45,9 +59,10 @@ class PengelolaDashboardController extends Controller
             $laporan = Laporan::query()
                 ->where('id_destinasi', $idDestinasi);
 
-            // Hitung jumlah laporan berdasarkan status.
+            // Hitung jumlah seluruh laporan.
             $totalLaporan = (clone $laporan)->count();
 
+            // Hitung laporan berdasarkan status.
             $belumDilihat = (clone $laporan)
                 ->where('status', Laporan::STATUS_BELUM_DILIHAT)
                 ->count();
@@ -90,35 +105,41 @@ class PengelolaDashboardController extends Controller
             $jumlahKategoriTerbesar = $kategoriTeratas->max('laporan_count') ?? 0;
 
             // Siapkan query laporan terbaru.
-            $queryLaporanTerbaru = (clone $laporan)->with([
-                'kategoriKerusakan',
-                'pelapor',
-                'foto',
-            ]);
-
-            // Terapkan filter pada tabel laporan terbaru.
-            if ($filter === 'perlu_penanganan') {
-                $queryLaporanTerbaru->whereIn('status', [
-                    Laporan::STATUS_BELUM_DILIHAT,
-                    Laporan::STATUS_DILIHAT,
-                    Laporan::STATUS_DITINDAKLANJUTI,
+            $queryLaporanTerbaru = (clone $laporan)
+                ->with([
+                    'kategoriKerusakan',
+                    'pelapor',
+                    'foto',
                 ]);
-            } elseif ($filter === 'belum_dilihat') {
-                $queryLaporanTerbaru->where(
-                    'status',
-                    Laporan::STATUS_BELUM_DILIHAT
-                );
-            } elseif ($filter === 'ditindaklanjuti') {
-                $queryLaporanTerbaru->where(
-                    'status',
-                    Laporan::STATUS_DITINDAKLANJUTI
-                );
+
+            // Filter pencarian berdasarkan judul atau ID laporan.
+            if ($search !== '') {
+                $queryLaporanTerbaru->where(function ($query) use ($search) {
+                    $query->where('judul', 'like', '%' . $search . '%');
+
+                    // Mendukung pencarian ID dengan format #16 atau 16.
+                    $idSearch = ltrim($search, '#');
+
+                    if (ctype_digit($idSearch)) {
+                        $query->orWhere('id_laporan', (int) $idSearch);
+                    }
+                });
             }
 
-            // Ambil maksimal lima laporan sesuai filter.
+            // Filter berdasarkan status.
+            if ($status !== '') {
+                $queryLaporanTerbaru->where('status', $status);
+            }
+
+            // Urutkan laporan berdasarkan waktu dibuat.
+            $queryLaporanTerbaru->orderBy(
+                'created_at',
+                $sort === 'terlama' ? 'asc' : 'desc'
+            );
+
+            // Ambil maksimal lima laporan.
             $laporanTerbaru = $queryLaporanTerbaru
-                ->orderByDesc('created_at')
-                ->take(5)
+                ->limit(5)
                 ->get();
         }
 
@@ -138,6 +159,7 @@ class PengelolaDashboardController extends Controller
             ? round(($belumDilihat / $totalLaporan) * 100, 1)
             : 0;
 
+        // Kirim data ke halaman dashboard.
         return view('pengelola.dashboard', compact(
             'pengelola',
             'totalLaporan',
@@ -152,8 +174,7 @@ class PengelolaDashboardController extends Controller
             'persentaseBelumDilihat',
             'kategoriTeratas',
             'laporanTerbaru',
-            'jumlahKategoriTerbesar',
-            'filter'
+            'jumlahKategoriTerbesar'
         ));
     }
 }
