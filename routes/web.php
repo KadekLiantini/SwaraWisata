@@ -12,6 +12,7 @@ use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
 use App\Http\Controllers\PasswordController;                                      
 use App\Http\Controllers\Pengelola\ProfilController as PengelolaProfilController;  
+use App\Http\Controllers\Pengelola\InfoController;
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -67,41 +68,44 @@ Route::middleware(['auth', 'role:pengelola'])
 ->prefix('pengelola')
 ->name('pengelola.')
 ->group(function () {
-Route::get('/dashboard', [
-    \App\Http\Controllers\Pengelola\PengelolaDashboardController::class,
-    'index'
-])->name('dashboard');
+    Route::get('/dashboard', [
+        \App\Http\Controllers\Pengelola\PengelolaDashboardController::class,
+        'index'
+    ])->name('dashboard');
 
-//Profil dan update password
-Route::get('/profil', [PengelolaProfilController::class, 'show'])->name('profil');   
-Route::put('/profil/password', PasswordController::class)->name('password.update'); 
+    //Profil dan update password
+    Route::get('/profil', [PengelolaProfilController::class, 'show'])->name('profil');   
+    Route::put('/profil/password', PasswordController::class)->name('password.update'); 
 
-// Daftar semua laporan
-Route::get('/laporan', [
-    PengelolaLaporanController::class,
-    'index'
-])->name('laporan.index');
+    //halaman info
+    Route::get('/informasi', InfoController::class)->name('info');
 
-// Detail laporan
-Route::get('/laporan/{laporan}', [
-    PengelolaLaporanController::class,
-    'show'
-])->name('laporan.show');
+    // Daftar semua laporan
+    Route::get('/laporan', [
+        PengelolaLaporanController::class,
+        'index'
+    ])->name('laporan.index');
 
-Route::post('/laporan/{laporan}/riwayat', [
-    PengelolaLaporanController::class,
-    'storeRiwayat'
-])->name('laporan.riwayat.store');
+    // Detail laporan
+    Route::get('/laporan/{laporan}', [
+        PengelolaLaporanController::class,
+        'show'
+    ])->name('laporan.show');
 
-Route::put('/laporan/{laporan}/riwayat/{riwayat}', [
-    PengelolaLaporanController::class,
-    'updateRiwayat'
-])->name('laporan.riwayat.update');
+    Route::post('/laporan/{laporan}/riwayat', [
+        PengelolaLaporanController::class,
+        'storeRiwayat'
+    ])->name('laporan.riwayat.store');
 
-Route::delete('/laporan/{laporan}/riwayat/{riwayat}', [
-    PengelolaLaporanController::class,
-    'destroyRiwayat'
-])->name('laporan.riwayat.destroy');
+    Route::put('/laporan/{laporan}/riwayat/{riwayat}', [
+        PengelolaLaporanController::class,
+        'updateRiwayat'
+    ])->name('laporan.riwayat.update');
+
+    Route::delete('/laporan/{laporan}/riwayat/{riwayat}', [
+        PengelolaLaporanController::class,
+        'destroyRiwayat'
+    ])->name('laporan.riwayat.destroy');
 });
 
 // Admin
