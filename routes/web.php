@@ -10,6 +10,8 @@ use App\Http\Controllers\Wisatawan\ProfilController;
 use App\Http\Controllers\Admin\DestinasiController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
+use App\Http\Controllers\PasswordController;                                      
+use App\Http\Controllers\Pengelola\ProfilController as PengelolaProfilController;  
 
 // Publik (aturan bisnis no. 1)
 Route::get('/', HomeController::class)->middleware('guest')->name('home');
@@ -69,6 +71,10 @@ Route::get('/dashboard', [
     \App\Http\Controllers\Pengelola\PengelolaDashboardController::class,
     'index'
 ])->name('dashboard');
+
+//Profil dan update password
+Route::get('/profil', [PengelolaProfilController::class, 'show'])->name('profil');   
+Route::put('/profil/password', PasswordController::class)->name('password.update'); 
 
 // Daftar semua laporan
 Route::get('/laporan', [
