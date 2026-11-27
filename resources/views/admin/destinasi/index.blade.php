@@ -356,8 +356,20 @@
                                     <p class="truncate text-xs font-semibold text-ink">
                                         {{ $item->nama }}
                                     </p>
-                                    <p class="mt-1 text-[10px] text-muted">
-                                        #{{ $item->id_destinasi }}
+                                    <p class="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+                                        <span>#{{ $item->id_destinasi }}</span>
+
+                                        @if ($item->is_active)
+                                            <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-mint px-2.5 py-1 text-[11px] font-semibold leading-none text-primary">
+                                                <span class="size-1.5 rounded-full bg-primary"></span>
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 rounded-full border border-secondary/25 bg-peach px-2.5 py-1 text-[11px] font-semibold leading-none text-secondary-ink">
+                                                <span class="size-1.5 rounded-full bg-secondary"></span>
+                                                Nonaktif
+                                            </span>
+                                        @endif
                                     </p>
                                 </td>
 
@@ -427,7 +439,7 @@
 
                                 {{-- Aksi --}}
                                 <td class="px-2 py-3">
-                                    <div class="flex items-center justify-center gap-1">
+                                    <div class="flex items-center justify-center gap-2">
                                         <x-button
                                             :href="route('admin.destinasi.edit', ['id_destinasi' => $item->id_destinasi])"
                                             variant="ghost"
@@ -436,17 +448,25 @@
                                             Edit
                                         </x-button>
 
-                                        <x-button
-                                            type="button"
-                                            variant="danger"
-                                            size="sm"
-                                            data-hapus-destinasi="1"
-                                            data-id="{{ $item->id_destinasi }}"
+                                        <form
+                                            method="POST"
+                                            action="{{ route('admin.destinasi.status', ['id_destinasi' => $item->id_destinasi]) }}"
+                                            data-form-status="1"
                                             data-nama="{{ $item->nama }}"
-                                            data-url="{{ route('admin.destinasi.destroy', ['id_destinasi' => $item->id_destinasi]) }}"
+                                            data-aksi="{{ $item->is_active ? 'menonaktifkan' : 'mengaktifkan' }}"
                                         >
-                                            Hapus
-                                        </x-button>
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <x-button
+                                                type="submit"
+                                                :variant="$item->is_active ? 'outline' : 'primary'"
+                                                size="sm"
+                                                class="min-w-[116px] justify-center whitespace-nowrap"
+                                            >
+                                                {{ $item->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                            </x-button>
+                                        </form>
                                     </div>
                                 </td>
 
@@ -564,58 +584,50 @@
 
         </div>
 
-        {{-- MODAL KONFIRMASI HAPUS --}}
+        {{-- MODAL KONFIRMASI STATUS --}}
         <div
-            id="modal-hapus-destinasi"
+            id="modal-konfirmasi-status"
             class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="judul-modal-hapus"
+            aria-labelledby="judul-modal-status"
         >
             <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-7">
                 <div class="flex items-start gap-4">
-                    <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-danger/10 text-danger">
+                    <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-soft-blue text-primary">
                         <x-icon name="warning" size="20" />
                     </span>
 
                     <div class="min-w-0">
-                        <h2 id="judul-modal-hapus" class="font-heading text-lg font-bold text-ink">
-                            Hapus destinasi ini?
+                        <h2 id="judul-modal-status" class="font-heading text-lg font-bold text-ink">
+                            Ubah status destinasi?
                         </h2>
                         <p class="mt-1 text-sm leading-relaxed text-muted">
-                            Destinasi <span id="nama-destinasi-hapus" class="font-semibold text-ink"></span>
-                            akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+                            Destinasi <span id="nama-destinasi-status" class="font-semibold text-ink"></span>
+                            akan <span id="aksi-status" class="font-semibold text-ink"></span>. Data destinasi tidak akan dihapus.
                         </p>
                     </div>
                 </div>
 
-                <form
-                    id="form-hapus-destinasi"
-                    method="POST"
-                    action="#"
-                    class="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row"
-                >
-                    @csrf
-                    @method('DELETE')
-
+                <div class="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row">
                     <x-button
                         type="button"
                         variant="outline"
                         size="sm"
-                        data-tutup-hapus="1"
+                        data-tutup-status="1"
                     >
                         Batal
                     </x-button>
 
                     <x-button
-                        id="konfirmasi-hapus"
-                        type="submit"
-                        variant="danger"
+                        id="konfirmasi-status"
+                        type="button"
+                        variant="primary"
                         size="sm"
                     >
-                        Ya, Hapus
+                        Ya, Lanjutkan
                     </x-button>
-                </form>
+                </div>
             </div>
         </div>
     </div>

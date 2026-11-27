@@ -14,11 +14,14 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Akun;
 use App\Models\RiwayatPenanganan;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class LaporanController extends Controller
 {
     public function create(Request $request, Destinasi $destinasi): View
     {
+        abort_unless($destinasi->is_active, 404, 'Destinasi tidak aktif.');
+
         $destinasi->load([
             'kecamatan.kabupaten',
             'kategoriWisata',
@@ -236,13 +239,23 @@ class LaporanController extends Controller
 
     public function store(Request $request, Destinasi $destinasi)
     {
+        $request->merge(['id_destinasi' => $destinasi->id_destinasi]);
+
         $validated = $request->validate([
+            'id_destinasi' => [
+                'required',
+                Rule::exists('destinasi', 'id_destinasi')->where(
+                    fn ($query) => $query->where('is_active', true)
+                ),
+            ],
             'id_kategori_kerusakan' => ['required', 'exists:kategori_kerusakan,id_kategori_kerusakan'],
             'judul' => ['required', 'string', 'max:150'],
             'lokasi_spesifik' => ['required', 'string', 'max:255'],
             'deskripsi' => ['required', 'string', 'max:1000'],
             'foto' => ['required', 'array', 'min:1', 'max:3'],
             'foto.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'id_destinasi.exists' => 'Destinasi tidak aktif dan tidak dapat dipakai untuk laporan baru.',
         ]);
 
         DB::transaction(function () use ($request, $validated, $destinasi) {

@@ -141,75 +141,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Modal konfirmasi hapus destinasi.
-    const modalHapus = document.getElementById('modal-hapus-destinasi');
-    const formHapus = document.getElementById('form-hapus-destinasi');
-    const namaHapus = document.getElementById('nama-destinasi-hapus');
-    const tombolKonfirmasi = document.getElementById('konfirmasi-hapus');
+    // Konfirmasi perubahan status destinasi.
+    const modalStatus = document.getElementById('modal-konfirmasi-status');
+    const namaStatus = document.getElementById('nama-destinasi-status');
+    const aksiStatus = document.getElementById('aksi-status');
+    const tombolKonfirmasiStatus = document.getElementById('konfirmasi-status');
+    let formStatusTertunda = null;
 
-    const kembalikanTombolKonfirmasi = () => {
-        if (!tombolKonfirmasi) return;
+    const tutupModalStatus = () => {
+        if (!modalStatus) return;
 
-        tombolKonfirmasi.disabled = false;
-        tombolKonfirmasi.textContent = 'Ya, Hapus';
-    };
-
-    const bukaModalHapus = (tombol) => {
-        if (!modalHapus || !formHapus) return;
-
-        if (formHapus.action && tombol.dataset.url) {
-            formHapus.action = tombol.dataset.url;
-        }
-
-        if (namaHapus) {
-            const nama = tombol.dataset.nama || `#${tombol.dataset.id || ''}`;
-            namaHapus.textContent = nama;
-        }
-
-        kembalikanTombolKonfirmasi();
-        modalHapus.classList.remove('hidden');
-        modalHapus.classList.add('flex');
-        document.body.classList.add('overflow-hidden');
-    };
-
-    const tutupModalHapus = () => {
-        if (!modalHapus) return;
-
-        modalHapus.classList.add('hidden');
-        modalHapus.classList.remove('flex');
+        modalStatus.classList.add('hidden');
+        modalStatus.classList.remove('flex');
         document.body.classList.remove('overflow-hidden');
-        kembalikanTombolKonfirmasi();
+        formStatusTertunda = null;
     };
+
+    document.addEventListener('submit', (event) => {
+        const form = event.target.closest('form[data-form-status]');
+
+        if (!form || !modalStatus) return;
+
+        event.preventDefault();
+
+        formStatusTertunda = form;
+
+        if (namaStatus) {
+            namaStatus.textContent = form.dataset.nama || '';
+        }
+
+        if (aksiStatus) {
+            aksiStatus.textContent = form.dataset.aksi || 'mengubah status';
+        }
+
+        modalStatus.classList.remove('hidden');
+        modalStatus.classList.add('flex');
+        document.body.classList.add('overflow-hidden');
+    });
 
     document.addEventListener('click', (event) => {
-        const tombolHapus = event.target.closest('[data-hapus-destinasi]');
-
-        if (tombolHapus) {
-            bukaModalHapus(tombolHapus);
-            return;
-        }
-
-        if (event.target.closest('[data-tutup-hapus]')) {
-            tutupModalHapus();
+        if (event.target.closest('[data-tutup-status]')) {
+            tutupModalStatus();
         }
     });
 
-    modalHapus?.addEventListener('click', (event) => {
-        if (event.target === modalHapus) {
-            tutupModalHapus();
+    modalStatus?.addEventListener('click', (event) => {
+        if (event.target === modalStatus) {
+            tutupModalStatus();
         }
     });
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            tutupModalHapus();
+            tutupModalStatus();
         }
     });
 
-    formHapus?.addEventListener('submit', () => {
-        if (!tombolKonfirmasi) return;
+    tombolKonfirmasiStatus?.addEventListener('click', () => {
+        if (!formStatusTertunda) return;
 
-        tombolKonfirmasi.disabled = true;
-        tombolKonfirmasi.textContent = 'Menghapus...';
+        const form = formStatusTertunda;
+
+        formStatusTertunda = null;
+        tutupModalStatus();
+        form.submit();
     });
 });
