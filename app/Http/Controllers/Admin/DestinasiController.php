@@ -19,9 +19,7 @@ class DestinasiController extends Controller
     /** Direktori foto destinasi pada disk public. */
     private const FOTO_DIRECTORY = 'destinasi';
 
-    /**
-     * Daftar destinasi dari database dengan relasi yang dipakai tabel Admin.
-     */
+    /**Daftar destinasi dari database dengan relasi yang dipakai tabel Admin.*/
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search', ''));
@@ -101,9 +99,7 @@ class DestinasiController extends Controller
         return view('admin.destinasi.index', compact('destinasi', 'ringkasan', 'kabupaten'));
     }
 
-    /**
-     * Form tambah: kategori dan kecamatan diambil dari database.
-     */
+    /**Form tambah: kategori dan kecamatan diambil dari database.*/
     public function create()
     {
         $kategoriWisata = KategoriWisata::orderBy('nama')->pluck('nama', 'id_kategori_wisata');
@@ -123,9 +119,7 @@ class DestinasiController extends Controller
         return view('admin.destinasi.create', compact('kategoriWisata', 'kecamatan'));
     }
 
-    /**
-     * Simpan destinasi baru.
-     */
+    /**Simpan destinasi baru.*/
     public function store(DestinasiRequest $request)
     {
         $validated = $request->validated();
@@ -160,9 +154,7 @@ class DestinasiController extends Controller
             ->with('success', 'Destinasi berhasil ditambahkan.');
     }
 
-    /**
-     * Form ubah dengan data destinasi yang akan diedit.
-     */
+    /**Form ubah dengan data destinasi yang akan diedit.*/
     public function edit($id_destinasi)
     {
         $destinasi = Destinasi::findOrFail($id_destinasi);
@@ -184,9 +176,7 @@ class DestinasiController extends Controller
         return view('admin.destinasi.edit', compact('destinasi', 'kategoriWisata', 'kecamatan'));
     }
 
-    /**
-     * Perbarui destinasi.
-     */
+    /**Perbarui destinasi.*/
     public function update(DestinasiRequest $request, $id_destinasi)
     {
         $destinasi = Destinasi::findOrFail($id_destinasi);
@@ -221,7 +211,7 @@ class DestinasiController extends Controller
                 $destinasi->update($data);
             });
         } catch (\Throwable $e) {
-            // DB gagal: foto lama tetap utuh, foto baru yang sudah diunggah dibersihkan.
+
             $this->removeFotoIfUploaded($fotoBaru);
 
             report($e);
@@ -232,7 +222,6 @@ class DestinasiController extends Controller
                 ->with('error', 'Destinasi gagal diperbarui. Silakan coba lagi.');
         }
 
-        // DB berhasil: hapus foto lama hanya jika foto benar-benar diganti.
         if ($fotoBaru !== null && $fotoBaru !== $fotoLama) {
             $this->removeFotoIfUploaded($fotoLama);
         }
@@ -242,48 +231,48 @@ class DestinasiController extends Controller
             ->with('success', 'Destinasi berhasil diperbarui.');
     }
 
-    /**
-     * Konfirmasi penghapusan.
-     */
-    public function delete($id_destinasi)
-    {
-        $destinasi = Destinasi::with(['kecamatan.kabupaten', 'kategoriWisata'])
-            ->findOrFail($id_destinasi);
-
-        return view('admin.destinasi.delete', compact('destinasi'));
-    }
-
-    /**
-     * Hapus destinasi. File foto dihapus hanya setelah data berhasil dihapus.
-     */
-    public function destroy($id_destinasi)
+    /**Aktifkan atau nonaktifkan destinasi tanpa menghapus data maupun foto.*/
+    public function updateStatus($id_destinasi)
     {
         $destinasi = Destinasi::findOrFail($id_destinasi);
-        $foto = $destinasi->foto;
 
         try {
-            DB::transaction(function () use ($destinasi) {
-                $destinasi->delete();
-            });
+            $destinasi->is_active = ! $destinasi->is_active;
+            $destinasi->save();
         } catch (\Throwable $e) {
-            // DB gagal: jangan sentuh file foto.
             report($e);
 
             return redirect()
                 ->route('admin.destinasi.index')
-                ->with('error', 'Destinasi gagal dihapus. Pastikan tidak ada data lain yang masih terhubung.');
+                ->with('error', 'Status destinasi gagal diubah. Silakan coba lagi.');
         }
 
-        $this->removeFotoIfUploaded($foto);
+        $pesan = $destinasi->is_active
+            ? 'Destinasi berhasil diaktifkan.'
+            : 'Destinasi berhasil dinonaktifkan.';
 
         return redirect()
             ->route('admin.destinasi.index')
-            ->with('success', 'Destinasi berhasil dihapus.');
+            ->with('success', $pesan);
     }
 
-    /**
-     * Simpan satu foto ke disk public. Tidak menimpa file yang sudah ada.
-     */
+    /**Konfirmasi hapus sudah tidak dipakai: destinasi hanya dinonaktifkan.*/
+    public function delete($id_destinasi)
+    {
+        return redirect()
+            ->route('admin.destinasi.index')
+            ->with('error', 'Penghapusan permanen destinasi tidak tersedia. Gunakan aksi nonaktifkan.');
+    }
+
+    /**Penghapusan permanen dinonaktifkan total.*/
+    public function destroy($id_destinasi)
+    {
+        return redirect()
+            ->route('admin.destinasi.index')
+            ->with('error', 'Penghapusan permanen destinasi tidak tersedia. Gunakan aksi nonaktifkan.');
+    }
+
+    /**Simpan satu foto ke disk public. Tidak menimpa file yang sudah ada.*/
     private function storeFoto(Request $request): ?string
     {
         if (! $request->hasFile('foto')) {
@@ -329,13 +318,6 @@ class DestinasiController extends Controller
         return $tersimpan;
     }
 
-    /**
-     * Hapus file foto secara aman.
-     *
-     * File tidak dihapus jika path masih direferensikan oleh record Destinasi lain.
-     * Kegagalan penghapusan file sengaja tidak dilempar agar operasi database
-     * yang sudah berhasil tidak berubah menjadi gagal.
-     */
     private function removeFotoIfUploaded(?string $path): void
     {
         $path = $this->fotoPathForDeletion($path);
@@ -349,7 +331,6 @@ class DestinasiController extends Controller
                 return;
             }
         } catch (\Throwable $e) {
-            // Referensi tidak dapat dipastikan: jangan hapus file.
             report($e);
 
             return;
@@ -366,9 +347,7 @@ class DestinasiController extends Controller
         }
     }
 
-    /**
-     * Terima hanya satu file langsung di dalam direktori foto destinasi.
-     */
+    /**Terima hanya satu file langsung di dalam direktori foto destinasi.*/
     private function fotoPathForDeletion(?string $path): ?string
     {
         if ($path === null) {

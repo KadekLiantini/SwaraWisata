@@ -39,7 +39,8 @@ class DashboardController extends Controller
             ->count();
 
         // Pencarian dan filter destinasi
-        $queryDestinasi = Destinasi::with([
+        $queryDestinasi = Destinasi::active()
+            ->with([
                 'kecamatan.kabupaten',
                 'kategoriWisata',
             ])

@@ -19,11 +19,11 @@ class HomeController extends Controller
         $statistik = [
             'total'     => Laporan::count(),
             'selesai'   => Laporan::where('status', Laporan::STATUS_SELESAI)->count(),
-            'destinasi' => Destinasi::count(),
+            'destinasi' => Destinasi::active()->count(),
         ];
 
-        // Top 3 destinasi dengan jumlah laporan terbanyak
-        $top3 = Destinasi::query()
+        // Top 3 destinasi aktif dengan jumlah laporan terbanyak
+        $top3 = Destinasi::active()
             ->with('kecamatan.kabupaten')
             ->whereHas('laporan')
             ->withCount([

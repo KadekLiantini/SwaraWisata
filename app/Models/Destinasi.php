@@ -10,6 +10,7 @@ class Destinasi extends Model
     protected $table = 'destinasi';
     protected $primaryKey = 'id_destinasi';
     protected $fillable = ['id_kecamatan', 'id_kategori_wisata', 'nama', 'deskripsi', 'foto', 'link_maps'];
+    protected $casts = ['is_active' => 'boolean'];
 
     public function kecamatan()      { return $this->belongsTo(Kecamatan::class, 'id_kecamatan', 'id_kecamatan'); }
     public function kategoriWisata() { return $this->belongsTo(KategoriWisata::class, 'id_kategori_wisata', 'id_kategori_wisata'); }
@@ -21,5 +22,17 @@ class Destinasi extends Model
     public function scopeTerbanyakDilaporkan($query)
     {
         return $query->withCount('laporan')->orderByDesc('laporan_count');
+    }
+
+    /** Destinasi yang masih aktif ditampilkan. */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /** Destinasi yang dinonaktifkan oleh admin. */
+    public function scopeInactive($query)
+    {
+        return $query->where('is_active', false);
     }
 }

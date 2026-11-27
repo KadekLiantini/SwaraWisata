@@ -117,6 +117,5 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/destinasi', [DestinasiController::class, 'store'])->name('destinasi.store');
     Route::get('/destinasi/{id_destinasi}/edit', [DestinasiController::class, 'edit'])->name('destinasi.edit');
     Route::put('/destinasi/{id_destinasi}', [DestinasiController::class, 'update'])->name('destinasi.update');
-    Route::get('/destinasi/{id_destinasi}/delete', [DestinasiController::class, 'delete'])->name('destinasi.delete');
-    Route::delete('/destinasi/{id_destinasi}', [DestinasiController::class, 'destroy'])->name('destinasi.destroy');
+    Route::patch('/destinasi/{id_destinasi}/status', [DestinasiController::class, 'updateStatus'])->name('destinasi.status');
 });
