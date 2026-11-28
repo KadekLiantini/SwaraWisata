@@ -10,6 +10,7 @@ use App\Http\Controllers\Wisatawan\ProfilController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DestinasiController;
 use App\Http\Controllers\Admin\KategoriPelaporanController;
+use App\Http\Controllers\Admin\PengajuanController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
 use App\Http\Controllers\PasswordController;                                      
@@ -114,9 +115,11 @@ Route::middleware(['auth', 'role:pengelola'])
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Placeholder navigasi dashboard; arahkan ke halaman sebenarnya saat tersedia.
-    Route::get('/pengajuan', fn () => redirect()->route('admin.dashboard'))->name('pengajuan.index');
-    Route::get('/pengajuan/{pengajuan}', fn () => redirect()->route('admin.dashboard'))->name('pengajuan.show');
+    // Navigasi admin. Halaman pengelola.terbitkan masih placeholder sampai fiturnya tersedia.
+    Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
+    Route::get('/pengajuan/{pengajuan}', [PengajuanController::class, 'show'])->name('pengajuan.show');
+    Route::post('/pengajuan/{pengajuan}/setujui', [PengajuanController::class, 'setujui'])->name('pengajuan.setujui');
+    Route::post('/pengajuan/{pengajuan}/tolak', [PengajuanController::class, 'tolak'])->name('pengajuan.tolak');
     Route::get('/pengelola/terbitkan', fn () => redirect()->route('admin.dashboard'))->name('pengelola.terbitkan');
 
     Route::get('/destinasi', [DestinasiController::class, 'index'])->name('destinasi.index');
