@@ -63,7 +63,10 @@ Route::middleware(['auth', 'role:wisatawan'])->group(function () {
         ->name('pengajuan.kecamatan');
 
     Route::post('/pengajuan-destinasi', [PengajuanDestinasiController::class, 'store'])
-        ->name('pengajuan.store');
+        ->name('pengajuan.store');    
+    // Komentar
+    Route::post('/laporan/{laporan:id_laporan}/riwayat/{riwayat:id_riwayat}/komentar', [LaporanController::class, 'storeKomentar',])->name('laporan.komentar.store')
+        ->withoutScopedBindings();
 });
 
 // Pengelola

@@ -478,4 +478,28 @@ class LaporanController extends Controller
             ->to($dariHalamanLain ? $kembali : route('laporan.create', $idDestinasi)) // DIUBAH
             ->with('success', 'Laporan berhasil dihapus.');
     }
+
+    // Komentar
+    public function storeKomentar(Request $request, Laporan $laporan, RiwayatPenanganan $riwayat
+    ) {
+        // Pastikan riwayat penanganan termasuk dalam laporan ini
+        if ($riwayat->id_laporan !== $laporan->id_laporan) {
+            abort(404);
+        }
+
+        // Validasi komentar
+        $validated = $request->validate([
+            'isi' => ['required', 'string', 'max:300'],
+        ]);
+
+        // Simpan komentar dari wisatawan yang sedang login
+        $riwayat->komentar()->create([
+            'id_akun' => auth()->user()->id_akun,
+            'isi' => $validated['isi'],
+        ]);
+
+        return redirect()
+            ->route('laporan.show', $laporan->id_laporan)
+            ->with('success', 'Komentar berhasil dikirim.');
+    }
 }
