@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DestinasiController;
 use App\Http\Controllers\Admin\KategoriPelaporanController;
 use App\Http\Controllers\Admin\PengajuanController;
+use App\Http\Controllers\Admin\PengelolaController;
 use App\Http\Controllers\Pengelola\PengelolaLaporanController;
 use App\Http\Controllers\Wisatawan\PengajuanDestinasiController;
 use App\Http\Controllers\PasswordController;                                      
@@ -115,12 +116,16 @@ Route::middleware(['auth', 'role:pengelola'])
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Navigasi admin. Halaman pengelola.terbitkan masih placeholder sampai fiturnya tersedia.
     Route::get('/pengajuan', [PengajuanController::class, 'index'])->name('pengajuan.index');
     Route::get('/pengajuan/{pengajuan}', [PengajuanController::class, 'show'])->name('pengajuan.show');
     Route::post('/pengajuan/{pengajuan}/setujui', [PengajuanController::class, 'setujui'])->name('pengajuan.setujui');
     Route::post('/pengajuan/{pengajuan}/tolak', [PengajuanController::class, 'tolak'])->name('pengajuan.tolak');
-    Route::get('/pengelola/terbitkan', fn () => redirect()->route('admin.dashboard'))->name('pengelola.terbitkan');
+
+    Route::get('/pengelola', [PengelolaController::class, 'index'])->name('pengelola.index');
+    Route::get('/pengelola/terbitkan', fn () => redirect()->route('admin.pengelola.index', ['terbitkan' => 1]))->name('pengelola.terbitkan');
+    Route::post('/pengelola', [PengelolaController::class, 'store'])->name('pengelola.store');
+    Route::put('/pengelola/{pengelola}', [PengelolaController::class, 'update'])->name('pengelola.update');
+    Route::delete('/pengelola/{pengelola}', [PengelolaController::class, 'destroy'])->name('pengelola.destroy');
 
     Route::get('/destinasi', [DestinasiController::class, 'index'])->name('destinasi.index');
     Route::get('/destinasi/create', [DestinasiController::class, 'create'])->name('destinasi.create');

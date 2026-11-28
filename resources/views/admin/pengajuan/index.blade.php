@@ -84,7 +84,7 @@
                             value="{{ $search }}"
                             maxlength="100"
                             placeholder="Cari nama tempat wisata, tautan maps, atau pengaju..."
-                            class="w-full rounded-lg border border-transparent bg-soft px-3 py-2.5 pl-10 text-xs text-ink outline-none transition placeholder:text-muted focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
+                            class="w-full rounded-lg border border-line bg-white px-3 py-2.5 pl-10 text-xs text-ink outline-none transition placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/10"
                         >
                     </div>
 
@@ -117,7 +117,7 @@
                         <select
                             id="id_kabupaten"
                             name="id_kabupaten"
-                            class="w-full rounded-lg border border-transparent bg-soft px-3 py-2.5 text-xs text-ink outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
+                            class="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-xs text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                         >
                             <option value="">Semua Kabupaten</option>
                             @foreach ($kabupaten as $item)
@@ -133,7 +133,7 @@
                         <select
                             id="sort"
                             name="sort"
-                            class="w-full rounded-lg border border-transparent bg-soft px-3 py-2.5 text-xs text-ink outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
+                            class="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-xs text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                         >
                             <option value="terbaru" @selected($sort === 'terbaru')>Urutan: Terbaru Masuk</option>
                             <option value="terlama" @selected($sort === 'terlama')>Urutan: Terlama Masuk</option>
@@ -145,7 +145,7 @@
                         id="tombol-reset-filter"
                         aria-label="Reset filter"
                         title="Reset filter"
-                        class="flex h-[38px] w-full items-center justify-center rounded-lg bg-soft text-ink transition hover:bg-primary/10 hover:text-primary sm:w-[38px]"
+                        class="flex h-[38px] w-full items-center justify-center rounded-lg border border-line bg-white text-ink transition hover:border-primary/40 hover:bg-soft hover:text-primary sm:w-[38px]"
                     >
                         <x-icon name="refresh" size="16" />
                     </a>
@@ -167,15 +167,15 @@
                         <col style="width: 14%">
                     </colgroup>
 
-                    <thead class="bg-soft">
-                        <tr class="text-[10px] font-semibold text-muted">
-                            <th class="px-5 py-4">Nama Destinasi Usulan</th>
-                            <th class="px-3 py-4">Kabupaten &amp;<br>Kecamatan</th>
-                            <th class="px-3 py-4">Kategori</th>
-                            <th class="px-3 py-4">Diajukan Oleh</th>
-                            <th class="px-3 py-4">Tanggal<br>Masuk</th>
-                            <th class="px-3 py-4">Status</th>
-                            <th class="px-4 py-4 text-center">Aksi Verifikasi</th>
+                    <thead>
+                        <tr class="border-b border-line bg-soft text-left text-[11px] font-bold uppercase tracking-wider text-muted">
+                            <th scope="col" class="px-4 py-3.5">Nama Destinasi Usulan</th>
+                            <th scope="col" class="px-4 py-3.5">Kabupaten &amp; Kecamatan</th>
+                            <th scope="col" class="px-4 py-3.5">Kategori</th>
+                            <th scope="col" class="px-4 py-3.5">Diajukan Oleh</th>
+                            <th scope="col" class="px-4 py-3.5">Tanggal Masuk</th>
+                            <th scope="col" class="px-4 py-3.5">Status</th>
+                            <th scope="col" class="px-4 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
 
@@ -286,9 +286,9 @@
                                 </td>
 
                                 <td class="whitespace-nowrap px-4 py-4">
-                                    <div class="flex items-center justify-center gap-1.5">
+                                    <div class="flex items-center justify-end gap-2">
                                         @if ($menunggu)
-                                            {{-- Ikon mata: langsung membuka modal form Verifikasi & Tambah Destinasi --}}
+                                            {{-- Ikon mata --}}
                                             <button
                                                 type="button"
                                                 title="Periksa & Verifikasi"
@@ -303,9 +303,9 @@
                                                 data-maps="{{ $linkMapsAman }}"
                                                 data-pengaju="{{ $item->pengaju?->username ? '@'.$item->pengaju->username : '' }}"
                                                 data-tanggal="{{ $item->created_at?->locale('id')->translatedFormat('d F Y, H:i') ? $item->created_at->locale('id')->translatedFormat('d F Y, H:i').' WITA' : '' }}"
-                                                class="inline-flex size-7 items-center justify-center rounded-md bg-soft text-ink transition hover:bg-soft-blue hover:text-primary"
+                                                class="inline-flex h-[36px] w-[36px] items-center justify-center rounded-lg border border-line bg-white text-ink transition hover:border-primary/40 hover:bg-soft hover:text-primary"
                                             >
-                                                <x-icon name="visibility" size="15" />
+                                                <x-icon name="visibility" size="18" />
                                             </button>
 
                                             {{-- Tombol Setujui --}}
@@ -321,21 +321,21 @@
                                                 data-maps="{{ $linkMapsAman }}"
                                                 data-pengaju="{{ $item->pengaju?->username ? '@'.$item->pengaju->username : '' }}"
                                                 data-tanggal="{{ $item->created_at?->locale('id')->translatedFormat('d F Y, H:i') ? $item->created_at->locale('id')->translatedFormat('d F Y, H:i').' WITA' : '' }}"
-                                                class="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-primary/90"
+                                                class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary h-[36px] px-3 text-xs font-semibold text-white transition hover:bg-primary-hover"
                                             >
-                                                <x-icon name="check_circle" size="14" />
+                                                <x-icon name="check_circle" size="17" />
                                                 <span>Setujui</span>
                                             </button>
 
-                                            {{-- Tombol Tolak --}}
+                                            {{-- Tombol Tolak (ukuran & bingkai sama dengan tombol Hapus) --}}
                                             <button
                                                 type="button"
                                                 data-buka-tolak
                                                 data-action="{{ route('admin.pengajuan.tolak', ['pengajuan' => $item->id_pengajuan]) }}"
                                                 data-nama="{{ $item->nama_lokasi }}"
-                                                class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-semibold text-danger transition hover:bg-danger-soft"
+                                                class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-danger bg-white h-[36px] px-3 text-xs font-semibold text-danger transition hover:bg-danger-soft"
                                             >
-                                                <x-icon name="cancel" size="14" />
+                                                <x-icon name="cancel" size="17" />
                                                 <span>Tolak</span>
                                             </button>
                                         @else
@@ -359,9 +359,9 @@
                                                 data-diverifikasi-pada="{{ $item->diverifikasi_pada?->locale('id')->translatedFormat('d F Y, H:i') ? $item->diverifikasi_pada->locale('id')->translatedFormat('d F Y, H:i').' WITA' : '-' }}"
                                                 data-destinasi-nama="{{ $item->destinasi?->nama ?? '' }}"
                                                 data-destinasi-id="{{ $item->destinasi?->id_destinasi ?? '' }}"
-                                                class="inline-flex size-7 items-center justify-center rounded-md bg-soft text-ink transition hover:bg-soft-blue hover:text-primary"
+                                                class="inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-line bg-white text-ink transition hover:border-primary/40 hover:bg-soft hover:text-primary"
                                             >
-                                                <x-icon name="visibility" size="15" />
+                                                <x-icon name="visibility" size="18" />
                                             </button>
                                         @endif
                                     </div>
