@@ -425,144 +425,194 @@
                                         Menunggu laporan dilihat dan diverifikasi oleh pengelola.
                                     </p>
                                 @endif
-                            </li>
+                            </li>                       
+                    {{-- Tahap 3: Ditindaklanjuti --}}
+                    <li class="relative pb-[26px] pl-11
+                        before:absolute before:bottom-[-2px] before:left-[14px] before:top-[30px] before:w-0
+                        before:border-l-2 before:border-dashed before:border-[#aab4c6]">
 
-                            {{-- Tahap 3: Ditindaklanjuti --}}
-                            <li class="relative pb-[26px] pl-11
-                                before:absolute before:bottom-[-2px] before:left-[14px] before:top-[30px] before:w-0
-                                before:border-l-2 before:border-dashed before:border-[#aab4c6]">
+                        <span class="absolute left-0 top-0 z-10 flex h-[30px] w-[30px] items-center justify-center rounded-full
+                            {{ $riwayatTindakLanjut->isNotEmpty() && !$riwayatPenyelesaian ? 'bg-[#fba51a] text-white shadow-[0_0_0_4px_#ffeacb]' : ($riwayatPenyelesaian ? 'bg-[#005f49] text-white' : 'bg-[#dee8ff] text-[#8c97aa] ring-2 ring-white') }}">
+                            <x-icon name="build" size="17" />
+                        </span>
 
-                                <span class="absolute left-0 top-0 z-10 flex h-[30px] w-[30px] items-center justify-center rounded-full
-                                    {{ $riwayatTindakLanjut->isNotEmpty() && !$riwayatPenyelesaian ? 'bg-[#fba51a] text-white shadow-[0_0_0_4px_#ffeacb]' : ($riwayatPenyelesaian ? 'bg-[#005f49] text-white' : 'bg-[#dee8ff] text-[#8c97aa] ring-2 ring-white') }}">
-                                    <x-icon name="build" size="17" />
-                                </span>
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="font-heading text-[17px] font-medium leading-6 text-[#111c2d]">
+                                3. Ditindaklanjuti
+                            </h3>
 
-                                <div class="flex items-start justify-between gap-2">
-                                    <h3 class="font-heading text-[17px] font-medium leading-6 text-[#111c2d]">
-                                        3. Ditindaklanjuti
-                                    </h3>
+                            <div class="flex flex-wrap justify-end gap-1.5">
+                                @if ($jumlahKomentar > 0)
+                                    <span class="inline-flex items-center gap-1 rounded-md bg-[#e7eeff] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#005f49]">
+                                        <x-icon name="chat_bubble" size="13" />
+                                        {{ $jumlahKomentar }} Komentar
+                                    </span>
+                                @endif
 
-                                    <div class="flex flex-wrap justify-end gap-1.5">
-                                        @if ($jumlahKomentar > 0)
-                                            <span class="inline-flex items-center gap-1 rounded-md bg-[#e7eeff] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#005f49]">
-                                                <x-icon name="chat_bubble" size="13" />
-                                                {{ $jumlahKomentar }} Komentar
-                                            </span>
-                                        @endif
+                                @if ($riwayatPenyelesaian)
+                                    <span class="rounded-md bg-[#98f4d3] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#00513e]">
+                                        Selesai
+                                    </span>
+                                @elseif ($riwayatTindakLanjut->isNotEmpty())
+                                    <span class="rounded-md bg-[#ffddb8] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#653e00]">
+                                        Tahap Terkini
+                                    </span>
+                                @else
+                                    <span class="rounded-md bg-[#dee8ff] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#6e7a74]">
+                                        Menunggu
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
 
-                                        @if ($riwayatPenyelesaian)
-                                            <span class="rounded-md bg-[#98f4d3] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#00513e]">
-                                                Selesai
-                                            </span>
-                                        @elseif ($riwayatTindakLanjut->isNotEmpty())
-                                            <span class="rounded-md bg-[#ffddb8] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#653e00]">
-                                                Tahap Terkini
-                                            </span>
-                                        @else
-                                            <span class="rounded-md bg-[#dee8ff] px-2.5 py-0.5 text-[11px] font-semibold leading-4 text-[#6e7a74]">
-                                                Menunggu
-                                            </span>
-                                        @endif
-                                    </div>
+                        @if ($riwayatTindakLanjut->isNotEmpty())
+                            @foreach ($riwayatTindakLanjut as $riwayat)
+                                <p class="{{ $loop->first ? 'mb-1.5' : 'mt-3 mb-1.5' }} text-[11px] font-medium leading-4 text-[#6e7a74]">
+                                    {{ $riwayat->created_at?->format('d M Y, H:i') }}
+                                </p>
+
+                                <p class="text-sm leading-5 text-[#111c2d]">
+                                    {{ $riwayat->deskripsi }}
+                                </p>
+
+                                {{-- Tombol komentar --}}
+                                <div class="mt-2 flex justify-end">
+                                    <button
+                                        type="button"
+                                        data-buka-komentar
+                                        data-komentar-action="{{ route('laporan.komentar.store', [
+                                            'laporan' => $laporan->id_laporan,
+                                            'riwayat' => $riwayat->id_riwayat,
+                                        ]) }}"
+                                        data-komentar-tahap="#{{ $laporan->id_laporan }} · Tahap: Ditindaklanjuti ({{ $riwayat->deskripsi }})"
+                                        data-komentar-template="komentar-template-{{ $riwayat->id_riwayat }}"
+                                        aria-label="Beri komentar"
+                                        title="Beri komentar"
+                                        class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-primary transition hover:bg-soft"
+                                    >
+                                        <x-icon name="chat" size="17" />
+                                        Beri Komentar
+                                    </button>
                                 </div>
 
-                                @if ($riwayatTindakLanjut->isNotEmpty())
-                                    @foreach ($riwayatTindakLanjut as $riwayat)
-                                        <p class="{{ $loop->first ? 'mb-1.5' : 'mt-3 mb-1.5' }} text-[11px] font-medium leading-4 text-[#6e7a74]">
-                                            {{ $riwayat->created_at?->format('d M Y, H:i') }}
-                                        </p>
+                                {{-- Template diskusi --}}
+                                <template id="komentar-template-{{ $riwayat->id_riwayat }}">
+                                    @forelse ($riwayat->komentar as $komentar)
+                                        <div class="rounded-xl bg-soft p-2">
+                                            {{-- Header komentar --}}
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div class="flex min-w-0 items-start gap-3">
+                                                    {{-- Avatar inisial username --}}
+                                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold uppercase text-white">
+                                                        {{ strtoupper(substr($komentar->penulis?->username ?? 'P', 0, 2)) }}
+                                                    </div>
 
-                                        <p class="text-sm leading-5 text-[#111c2d]">
-                                            {{ $riwayat->deskripsi }}
-                                        </p>
-
-                                        {{-- Detail tindakan lapangan --}}
-                                        <div class="mt-2 overflow-hidden rounded-lg bg-[#f0f3ff]">
-
-                                            <details open class="group">
-                                                <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-2 py-2 font-heading text-xs font-semibold leading-4 text-[#005f49]">
-                                                    <span class="flex items-center gap-1.5">
-                                                        <x-icon name="groups" size="16" />
-                                                        Tindakan di Lapangan #{{ $loop->iteration }}
-                                                    </span>
-
-                                                    <x-icon name="expand_more" size="17"
-                                                        class="text-[#6e7a74] transition-transform group-open:rotate-180" />
-                                                </summary>
-
-                                                <div class="px-2 pb-2">
-
-                                                    <p class="text-[13px] leading-5 text-[#3e4944]">
-                                                        {{ $riwayat->deskripsi }}
-                                                    </p>
-
-                                                    {{-- Dokumentasi progres --}}
-                                                    @if ($riwayat->foto->isNotEmpty())
-                                                        <p class="mb-1 mt-2 font-heading text-[11px] font-semibold leading-4 text-[#3e4944]">
-                                                            Dokumentasi Progres Lapangan Pengelola:
-                                                        </p>
-
-                                                        <div class="grid grid-cols-2 gap-1">
-                                                            @foreach ($riwayat->foto as $foto)
-                                                                <a href="{{ $foto->url }}"
-                                                                    target="_blank"
-                                                                    class="block h-[90px] overflow-hidden rounded-md">
-                                                                    <img src="{{ $foto->url }}"
-                                                                        alt="Dokumentasi progres penanganan"
-                                                                        class="h-full w-full object-cover transition hover:scale-105">
-                                                                </a>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-
-                                                    {{-- Komentar --}}
-                                                    @if ($riwayat->komentar->isNotEmpty())
-                                                        <div class="mt-3 border-t border-[#dee8ff] pt-2">
-                                                            <p class="mb-2 font-heading text-[11px] font-semibold text-[#3e4944]">
-                                                                Diskusi Penanganan
+                                                    <div class="min-w-0">
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            <p class="text-sm font-semibold text-ink">
+                                                                {{ $komentar->penulis?->username ?? 'Pengguna' }}
                                                             </p>
 
-                                                            <div class="space-y-3">
-                                                                @foreach ($riwayat->komentar as $komentar)
-                                                                    <div>
-                                                                        <p class="text-xs font-semibold text-[#111c2d]">
-                                                                            {{ $komentar->penulis?->username ?? 'Pengguna' }}
-                                                                        </p>
-
-                                                                        <p class="text-[13px] leading-5 text-[#3e4944]">
-                                                                            {{ $komentar->isi }}
-                                                                        </p>
-
-                                                                        @if ($komentar->balasan->isNotEmpty())
-                                                                            <div class="ml-3 mt-2 space-y-2 border-l-2 border-[#dee8ff] pl-3">
-                                                                                @foreach ($komentar->balasan as $balasan)
-                                                                                    <div>
-                                                                                        <p class="text-xs font-semibold text-[#111c2d]">
-                                                                                            {{ $balasan->penulis?->username ?? 'Pengguna' }}
-                                                                                        </p>
-
-                                                                                        <p class="text-[13px] leading-5 text-[#3e4944]">
-                                                                                            {{ $balasan->isi }}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        @endif
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
+                                                            {{-- Label pelapor --}}
+                                                            @if ((int) $komentar->id_akun === (int) $laporan->id_akun)
+                                                                <span class="rounded-full bg-mint/50 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                                                    Pelapor
+                                                                </span>
+                                                            @endif
                                                         </div>
-                                                    @endif
+
+                                                        {{-- Tanggal komentar --}}
+                                                        <p class="mt-1 text-xs text-subtle">
+                                                            {{ $komentar->created_at?->locale('id')->translatedFormat('j F Y, H:i') }} WITA
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </details>
+
+                                                {{-- ID komentar --}}
+                                                <span class="shrink-0 text-xs font-medium text-subtle">
+                                                    #{{ $komentar->id_komentar }}
+                                                </span>
+                                            </div>
+
+                                            {{-- Isi komentar --}}
+                                            <p class="mt-2 whitespace-pre-line text-sm leading-6 text-muted">
+                                                {{ $komentar->isi }}
+                                            </p>
+
+                                            {{-- Balasan komentar --}}
+                                            @if ($komentar->balasan->isNotEmpty())
+                                                <div class="mt-3 space-y-3 border-l-2 border-line pl-4">
+                                                    @foreach ($komentar->balasan as $balasan)
+                                                        <div>
+                                                            <p class="text-xs font-semibold text-ink">
+                                                                {{ $balasan->penulis?->username ?? 'Pengguna' }}
+                                                            </p>
+
+                                                            <p class="mt-1 text-sm leading-5 text-muted">
+                                                                {{ $balasan->isi }}
+                                                            </p>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endforeach
-                                @else
-                                    <p class="text-sm leading-5 text-[#6e7a74]">
-                                        Laporan belum memasuki tahap tindak lanjut oleh pengelola.
-                                    </p>
-                                @endif
-                            </li>
+                                    @empty
+                                        <p class="rounded-xl bg-soft p-4 text-sm text-subtle">
+                                            Belum ada komentar pada tahap penanganan ini.
+                                        </p>
+                                    @endforelse
+                                </template>
+
+                                {{-- Detail tindakan lapangan --}}
+                                <div class="mt-2 overflow-hidden rounded-lg bg-[#f0f3ff]">
+                                    <details open class="group">
+                                        <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-2 py-2 font-heading text-xs font-semibold leading-4 text-[#005f49]">
+                                            <span class="flex items-center gap-1.5">
+                                                <x-icon name="groups" size="16" />
+                                                Tindakan di Lapangan #{{ $loop->iteration }}
+                                            </span>
+
+                                            <x-icon name="expand_more" size="17"
+                                                class="text-[#6e7a74] transition-transform group-open:rotate-180" />
+                                        </summary>
+
+                                        <div class="px-2 pb-2">
+                                            <p class="text-[13px] leading-5 text-[#3e4944]">
+                                                {{ $riwayat->deskripsi }}
+                                            </p>
+
+                                            @if ($riwayat->foto->isNotEmpty())
+                                                <p class="mb-1 mt-2 font-heading text-[11px] font-semibold leading-4 text-[#3e4944]">
+                                                    Dokumentasi Progres Lapangan Pengelola:
+                                                </p>
+
+                                                <div class="grid grid-cols-2 gap-1">
+                                                    @foreach ($riwayat->foto as $foto)
+                                                        <a
+                                                            href="{{ $foto->url }}"
+                                                            target="_blank"
+                                                            class="block h-[90px] overflow-hidden rounded-md"
+                                                        >
+                                                            <img
+                                                                src="{{ $foto->url }}"
+                                                                alt="Dokumentasi progres penanganan"
+                                                                class="h-full w-full object-cover transition hover:scale-105"
+                                                            >
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </details>
+                                </div>
+                            @endforeach
+                        @else
+                            <p class="text-sm leading-5 text-[#6e7a74]">
+                                Laporan belum memasuki tahap tindak lanjut oleh pengelola.
+                            </p>
+                        @endif
+                    </li>
+
 
                             {{-- Tahap 4: Selesai --}}
                             <li class="relative pl-11">
@@ -584,16 +634,100 @@
                                     </span>
                                 </div>
 
-                                @if ($riwayatPenyelesaian)
-                                    <p class="mb-1.5 text-[11px] font-medium leading-4 text-[#6e7a74]">
+                               @if ($riwayatPenyelesaian)
+                                    <p class="mb-1.5 text-[11px] font-medium leading-4 text-subtle">
                                         {{ $riwayatPenyelesaian->created_at?->format('d M Y, H:i') }}
                                     </p>
 
-                                    <p class="text-sm leading-5 text-[#3e4944]">
+                                    <p class="text-sm leading-5 text-ink">
                                         {{ $riwayatPenyelesaian->deskripsi }}
                                     </p>
+
+                                    {{-- Tombol komentar penyelesaian --}}
+                                    <div class="mt-2 flex justify-end">
+                                        <button
+                                            type="button"
+                                            data-buka-komentar
+                                            data-komentar-action="{{ route('laporan.komentar.store', [
+                                                'laporan' => $laporan->id_laporan,
+                                                'riwayat' => $riwayatPenyelesaian->id_riwayat,
+                                            ]) }}"
+                                            data-komentar-tahap="#{{ $laporan->id_laporan }} · Tahap: Penyelesaian ({{ $riwayatPenyelesaian->deskripsi }})"
+                                            data-komentar-template="komentar-template-{{ $riwayatPenyelesaian->id_riwayat }}"
+                                            aria-label="Beri komentar"
+                                            title="Beri komentar"
+                                            class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-primary transition hover:bg-soft"
+                                        >
+                                            <x-icon name="chat" size="17" />
+                                            Beri Komentar
+                                        </button>
+                                    </div>
+
+                                    {{-- Template diskusi penyelesaian --}}
+                                    <template id="komentar-template-{{ $riwayatPenyelesaian->id_riwayat }}">
+                                        @forelse ($riwayatPenyelesaian->komentar as $komentar)
+                                            <div class="rounded-xl bg-soft p-4">
+                                                {{-- Informasi penulis komentar --}}
+                                                <div class="flex items-start justify-between gap-3">
+                                                    <div class="flex min-w-0 items-center gap-3">
+                                                        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                                                            {{ strtoupper(substr($komentar->penulis?->username ?? 'P', 0, 2)) }}
+                                                        </div>
+
+                                                        <div class="min-w-0">
+                                                            <div class="flex flex-wrap items-center gap-2">
+                                                                <p class="text-sm font-semibold text-ink">
+                                                                    {{ $komentar->penulis?->username ?? 'Pengguna' }}
+                                                                </p>
+
+                                                                @if ((int) $komentar->id_akun === (int) $laporan->id_akun)
+                                                                    <span class="rounded-full bg-mint/50 px-2 py-0.5 text-xs font-medium text-primary">
+                                                                        Pelapor
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+
+                                                            <p class="mt-1 text-xs text-subtle">
+                                                                {{ $komentar->created_at?->locale('id')->translatedFormat('j F Y, H:i') }} WITA
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <span class="shrink-0 text-xs text-subtle">
+                                                        #{{ $komentar->id_komentar }}
+                                                    </span>
+                                                </div>
+
+                                                {{-- Isi komentar --}}
+                                                <p class="mt-1 whitespace-pre-line text-sm leading-6 text-muted">
+                                                    {{ $komentar->isi }}
+                                                </p>
+
+                                                {{-- Balasan komentar --}}
+                                                @if ($komentar->balasan->isNotEmpty())
+                                                    <div class="mt-3 space-y-3 border-l-2 border-line pl-4">
+                                                        @foreach ($komentar->balasan as $balasan)
+                                                            <div>
+                                                                <p class="text-xs font-semibold text-ink">
+                                                                    {{ $balasan->penulis?->username ?? 'Pengguna' }}
+                                                                </p>
+
+                                                                <p class="mt-1 text-sm leading-5 text-muted">
+                                                                    {{ $balasan->isi }}
+                                                                </p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <p class="rounded-xl bg-soft p-4 text-sm text-subtle">
+                                                Belum ada komentar pada tahap penanganan ini.
+                                            </p>
+                                        @endforelse
+                                    </template>
                                 @else
-                                    <p class="mt-1.5 text-sm leading-5 text-[#6e7a74]">
+                                    <p class="mt-1.5 text-sm leading-5 text-subtle">
                                         Menunggu penyelesaian dan uji kelayakan fasilitas oleh pengelola. Pengelola akan mengunggah foto bukti fasilitas yang telah pulih setelah seluruh perbaikan selesai.
                                     </p>
                                 @endif
@@ -674,6 +808,7 @@
 
     {{-- Modal Edit Laporan --}}
         @include('wisatawan.laporan.partials.modal-edit', ['kembaliKe' => url()->current()])
+        @include('wisatawan.laporan.partials.modal-komentar')
 
     {{-- Modal Perbesar Foto --}}
     <div
@@ -695,4 +830,86 @@
             class="max-h-[90vh] max-w-full rounded-xl object-contain shadow-2xl"
         />
     </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('modal-komentar');
+        const form = document.getElementById('form-komentar');
+        const tahap = document.getElementById('komentar-tahap');
+        const textarea = document.getElementById('isi-komentar');
+        const jumlahKarakter = document.getElementById('jumlah-karakter');
+        const daftarKomentar = document.getElementById('daftar-komentar');
+
+        if (
+            !modal ||
+            !form ||
+            !tahap ||
+            !textarea ||
+            !jumlahKarakter ||
+            !daftarKomentar
+        ) {
+            return;
+        }
+
+        // Membuka modal dan menampilkan komentar sesuai tahap
+        document.querySelectorAll('[data-buka-komentar]').forEach(function (tombol) {
+            tombol.addEventListener('click', function () {
+                const templateId = this.dataset.komentarTemplate;
+                const template = document.getElementById(templateId);
+
+                form.action = this.dataset.komentarAction;
+                tahap.textContent = this.dataset.komentarTahap;
+
+                daftarKomentar.replaceChildren();
+
+                if (template) {
+                    daftarKomentar.appendChild(
+                        template.content.cloneNode(true)
+                    );
+                } else {
+                    daftarKomentar.textContent =
+                        'Belum ada komentar pada tahap penanganan ini.';
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                jumlahKarakter.textContent = textarea.value.length;
+                textarea.focus();
+            });
+        });
+
+        // Menutup modal
+        function tutupModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.querySelectorAll('[data-tutup-komentar]').forEach(function (tombol) {
+            tombol.addEventListener('click', tutupModal);
+        });
+
+        // Menutup modal ketika area luar diklik
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                tutupModal();
+            }
+        });
+
+        // Menutup modal dengan tombol Escape
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                tutupModal();
+            }
+        });
+
+        // Menghitung jumlah karakter komentar
+        textarea.addEventListener('input', function () {
+            jumlahKarakter.textContent = this.value.length;
+        });
+    });
+</script>
+@endpush
+
 </x-layouts.public>
