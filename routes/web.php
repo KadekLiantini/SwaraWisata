@@ -112,6 +112,9 @@ Route::middleware(['auth', 'role:pengelola'])
         PengelolaLaporanController::class,
         'destroyRiwayat'
     ])->name('laporan.riwayat.destroy');
+
+    Route::post('/laporan/{laporan}/riwayat/{riwayat}/komentar/{komentar}/balasan', [PengelolaLaporanController::class, 'storeBalasanKomentar'])
+    ->name('laporan.komentar.balasan.store');
 });
 
 // Admin

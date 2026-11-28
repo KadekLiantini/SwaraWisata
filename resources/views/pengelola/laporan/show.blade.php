@@ -347,17 +347,19 @@
                 </p>
 
                 <div class="flex items-center gap-2">
+                @if ($riwayat)
                     <button
                         type="button"
-                        disabled
-                        aria-label="Komentar"
-                        title="Fitur komentar akan tersedia pada pengembangan berikutnya"
-                        data-komentar-placeholder
-                        class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-mint/50 text-primary shadow-sm disabled:cursor-not-allowed"
+                        aria-label="Lihat komentar"
+                        title="Lihat komentar dan berikan tanggapan"
+                        data-buka-komentar-pengelola
+                        data-riwayat-id="{{ $riwayat->id_riwayat }}"
+                        data-tahap="Tahap: Ditindaklanjuti"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-mint/50 text-primary shadow-sm transition hover:opacity-80"
                     >
                         <x-icon name="chat" size="17" />
                     </button>
-
+                @endif
                     <span class="rounded px-2 py-1 bg-peach text-[11px] font-bold text-secondary-ink">
                         Aktif
                     </span>
@@ -530,18 +532,20 @@
             </p>
 
             <div class="flex items-center gap-2">
-                {{-- Tombol komentar --}}
+                {{-- Tombol komentar penyelesaian --}}
+                @if ($riwayatPenyelesaian)
                 <button
                     type="button"
-                    disabled
-                    aria-label="Komentar"
-                    title="Fitur komentar akan tersedia pada pengembangan berikutnya"
-                    data-komentar-placeholder
-                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md {{ $sudahSelesai ? 'bg-mint/50 text-primary' : 'bg-soft-strong text-subtle' }} shadow-sm disabled:cursor-not-allowed"
-                >
+                    aria-label="Lihat komentar"
+                    title="Lihat komentar dan berikan tanggapan"
+                    data-buka-komentar-pengelola
+                    data-riwayat-id="{{ $riwayatPenyelesaian->id_riwayat }}"
+                    data-tahap="Tahap: Penyelesaian"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-mint/50 text-primary shadow-sm transition hover:opacity-80">
                     <x-icon name="chat" size="17" />
                 </button>
-
+                @endif
+                
                 {{-- Status penyelesaian --}}
                 @if ($sudahSelesai)
                     <span class="rounded px-2 py-1 text-[11px] font-bold text-primary bg-mint">
@@ -1177,8 +1181,7 @@
         pilihTab(@json($tabAktif));
 
         // Upload foto: tindak lanjut dan penyelesaian
-        
-function aktifkanUploadFoto(jenis) {
+        function aktifkanUploadFoto(jenis) {
     const inputFoto = document.getElementById('foto-' + jenis);
     const dropzone = document.getElementById('dropzone-' + jenis);
     const daftarFoto = document.getElementById('daftar-foto-' + jenis);
@@ -1323,8 +1326,7 @@ function aktifkanUploadFoto(jenis) {
             inputFoto.value = '';
             tampilkanFile();
         });
-    }
-}
+    }}
 
         aktifkanUploadFoto('tindak-lanjut');
         aktifkanUploadFoto('penyelesaian');
@@ -1340,8 +1342,112 @@ function aktifkanUploadFoto(jenis) {
                 }
             });
         });
+
+            // Modal komentar pengelola
+        const modalKomentar = document.getElementById('modal-komentar-pengelola');
+        const tombolBukaKomentar = document.querySelectorAll('[data-buka-komentar-pengelola]');
+        const tombolTutupKomentar = document.querySelectorAll('[data-tutup-komentar-pengelola]');
+        const tahapKomentar = document.getElementById('komentar-pengelola-tahap');
+        const textareaBalasan = document.getElementById('isi-balasan-pengelola');
+        const jumlahKarakterBalasan = document.getElementById('jumlah-karakter-balasan');
+
+        if (modalKomentar) {
+            // Membuka modal dan menampilkan komentar sesuai riwayat
+            tombolBukaKomentar.forEach(function (tombol) {
+                tombol.addEventListener('click', function () {
+                    const riwayatId = this.dataset.riwayatId;
+                    const templateKomentar = document.querySelector(
+                        'template[data-komentar-riwayat="' + riwayatId + '"]'
+                    );
+
+                    tahapKomentar.textContent = this.dataset.tahap;
+
+                    const daftarKomentar = document.getElementById('daftar-komentar-pengelola');
+                    const formBalasan = document.getElementById('form-balasan-komentar-pengelola');
+                    const tombolKirimBalasan = formBalasan
+                    ? formBalasan.querySelector('button[type="submit"]')
+                    : null;
+
+                    if (daftarKomentar) {
+                        daftarKomentar.innerHTML = '';
+
+                        if (templateKomentar) {
+                            daftarKomentar.appendChild(templateKomentar.content.cloneNode(true));
+                        } else {
+                            daftarKomentar.innerHTML = `
+                                <p class="text-sm text-subtle">
+                                    Belum ada komentar pada tahap penanganan ini.
+                                </p>
+                            `;
+                        }
+                    }
+
+                    // Reset form balasan setiap modal dibuka
+                    if (formBalasan && textareaBalasan) {
+                        formBalasan.action = '';
+                        textareaBalasan.value = '';
+                        textareaBalasan.disabled = true;
+                        textareaBalasan.placeholder = 'Pilih komentar yang ingin dibalas terlebih dahulu...';
+                    }
+                    if (tombolKirimBalasan) {
+                        tombolKirimBalasan.disabled = true;
+                    }
+
+                    if (jumlahKarakterBalasan) {
+                        jumlahKarakterBalasan.textContent = '0';
+                    }
+
+                    // Membuka modal
+                    modalKomentar.classList.remove('hidden');
+                    modalKomentar.classList.add('flex');
+
+                    document.body.classList.add('overflow-hidden');
+
+                    // Menghubungkan tombol balas pada setiap komentar
+                    daftarKomentar.querySelectorAll('[data-pilih-komentar]').forEach(function (tombolBalas) {
+                        tombolBalas.addEventListener('click', function () {
+                            if (formBalasan && textareaBalasan) {
+                                formBalasan.action = this.dataset.action;
+                                textareaBalasan.disabled = false;
+                                textareaBalasan.placeholder = 'Tulis tanggapan Anda di sini...';
+                                textareaBalasan.focus();
+                            }
+                            if (tombolKirimBalasan) {
+                                tombolKirimBalasan.disabled = false;
+                            }
+                        });
+                    });
+                });
+            });
+
+            // Menutup modal
+            function tutupModalKomentar() {
+                modalKomentar.classList.add('hidden');
+                modalKomentar.classList.remove('flex');
+
+                document.body.classList.remove('overflow-hidden');
+            }
+
+            tombolTutupKomentar.forEach(function (tombol) {
+                tombol.addEventListener('click', tutupModalKomentar);
+            });
+
+            // Menutup modal jika area luar diklik
+            modalKomentar.addEventListener('click', function (event) {
+                if (event.target === modalKomentar) {
+                    tutupModalKomentar();
+                }
+            });
+
+            // Menghitung jumlah karakter
+            if (textareaBalasan && jumlahKarakterBalasan) {
+                textareaBalasan.addEventListener('input', function () {
+                    jumlahKarakterBalasan.textContent = this.value.length;
+                });
+            }
+        }
     });
 </script>
 
-
+@include('pengelola.laporan.partials.modal-komentar-pengelola')
 </x-layouts.pengelola>

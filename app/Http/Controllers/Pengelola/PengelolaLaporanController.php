@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\KategoriKerusakan;
+use App\Models\Komentar;
 
 class PengelolaLaporanController extends Controller
 {
@@ -172,6 +173,8 @@ public function index(Request $request)
             'foto',
             'riwayat.pengelola',
             'riwayat.foto',
+            'riwayat.komentar.penulis',
+            'riwayat.komentar.balasan.penulis',
         ]);
 
         return view('pengelola.laporan.show', compact('laporan'));
@@ -383,5 +386,43 @@ public function index(Request $request)
         return redirect()
             ->route('pengelola.laporan.show', $laporan->id_laporan)
             ->with('success', 'Riwayat penanganan berhasil dihapus.');
+    }
+
+    public function storeBalasanKomentar(Request $request, Laporan $laporan, RiwayatPenanganan $riwayat, Komentar $komentar
+    ) {
+        $this->pastikanMilikDestinasi($laporan);
+
+        abort_unless(
+            (int) $riwayat->id_laporan === (int) $laporan->id_laporan,
+            404
+        );
+
+        abort_unless(
+            (int) $komentar->id_riwayat === (int) $riwayat->id_riwayat
+            && $komentar->id_parent === null,
+            404
+        );
+
+        $validated = $request->validate([
+            'isi' => ['required', 'string', 'max:300'],
+        ]);
+        
+        // Cegah pengelola membalas komentar yang sudah ditanggapi
+        if ($komentar->balasan()->exists()) {
+            return redirect()
+                ->route('pengelola.laporan.show', $laporan->id_laporan)
+                ->with('error', 'Komentar ini sudah memiliki tanggapan resmi.');
+        }
+
+        Komentar::create([
+            'id_riwayat' => $riwayat->id_riwayat,
+            'id_akun' => auth()->user()->id_akun,
+            'id_parent' => $komentar->id_komentar,
+            'isi' => $validated['isi'],
+        ]);
+
+        return redirect()
+            ->route('pengelola.laporan.show', $laporan->id_laporan)
+            ->with('success', 'Tanggapan berhasil dikirim.');
     }
 }
