@@ -189,7 +189,7 @@ public function index(Request $request)
             'deskripsi' => [
                 'required',
                 'string',
-                'max:2000',
+                'max:500',
             ],
             'foto' => [
                 'required',
@@ -200,7 +200,7 @@ public function index(Request $request)
                 'required',
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:5120',
+                'max:2048',
             ],
         ], [
             'jenis_tindakan.required' => 'Jenis tindakan wajib dipilih.',
@@ -208,7 +208,7 @@ public function index(Request $request)
             'foto.required' => 'Foto bukti wajib diunggah.',
             'foto.min' => 'Minimal unggah satu foto bukti.',
             'foto.*.image' => 'File bukti harus berupa gambar.',
-            'foto.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
+            'foto.*.max' => 'Ukuran setiap foto maksimal 2 MB.',
         ]);
 
         $fotoTersimpan = [];
@@ -289,15 +289,14 @@ public function index(Request $request)
     public function updateRiwayat(
         Request $request,
         Laporan $laporan,
-        RiwayatPenanganan $riwayat
-    ) {
+        RiwayatPenanganan $riwayat) {
         $this->pastikanMilikPengelola($laporan, $riwayat);
 
         $validated = $request->validate([
             'deskripsi' => [
                 'required',
                 'string',
-                'max:2000',
+                'max:500',
             ],
             'foto' => [
                 'sometimes',
@@ -307,13 +306,13 @@ public function index(Request $request)
             'foto.*' => [
                 'image',
                 'mimes:jpg,jpeg,png,webp',
-                'max:5120',
+                'max:2048',
             ],
         ], [
             'deskripsi.required' => 'Deskripsi penanganan wajib diisi.',
             'foto.min' => 'Minimal unggah satu foto jika ingin mengganti foto bukti.',
             'foto.*.image' => 'File bukti harus berupa gambar.',
-            'foto.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
+            'foto.*.max' => 'Ukuran setiap foto maksimal 2 MB.',
         ]);
 
         $fotoTersimpan = [];
